@@ -22,6 +22,9 @@ Source: [`diagrams/overview.d2`](diagrams/overview.d2)
 | **RBE** | Buildfarm | Remote Execution + CAS | Apache-2.0 | Java, Redis backplane, official Helm chart |
 | **RBE** | Buildbarn | Remote Execution + CAS | Apache-2.0 | Go, modular (bb-storage/scheduler/worker/runner), no official Helm chart |
 
+For broader ecosystem context beyond the providers currently charted here, see
+[`reapi-ecosystem.md`](reapi-ecosystem.md).
+
 ### Why these choices?
 
 - **BuildBuddy OSS** is the only open-source project that provides a usable
@@ -34,6 +37,8 @@ Source: [`diagrams/overview.d2`](diagrams/overview.d2)
   runner) and uses a block-based self-cleaning CAS.
 - **Reninja** is a Ninja-compatible REAPI client that can target the same
   BES, remote cache, and remote execution endpoints as Bazel and Buck2.
+- **NativeLink** and **BuildGrid** are additional server implementations worth
+  tracking, but they are not charted by rek8s today.
 
 ## Data Flow
 

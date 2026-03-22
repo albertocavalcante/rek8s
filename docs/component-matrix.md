@@ -59,9 +59,46 @@ It also provides remote caching, which can be used standalone or alongside
 a separate RBE backend (Buildfarm or Buildbarn).
 
 **Note**: When using BuildBuddy OSS as BES alongside a separate RBE backend,
-the Bazel client sends build events to BuildBuddy (`--bes_backend`) and
-execution requests to the RBE backend (`--remote_executor`). These are
-independent gRPC connections.
+a **BES-capable** client sends build events to BuildBuddy (`--bes_backend`)
+while sending execution requests to the RBE backend (`--remote_executor`).
+These are independent gRPC connections.
+
+**Important**: REAPI compatibility does not automatically imply BES support.
+For a broader list of REAPI clients and servers, including NativeLink,
+BuildGrid, Reclient, Siso, Pants, Please, and BuildStream, see
+[`reapi-ecosystem.md`](reapi-ecosystem.md).
+
+---
+
+## Other RBE Servers Worth Tracking
+
+These are not charted by rek8s today, but they are worth tracking in the wider
+ecosystem:
+
+| Provider | Type | Notes |
+|---------|------|-------|
+| **NativeLink** | Remote execution + cache | Broad compatibility story; current upstream license is `FSL-1.1-Apache-2.0` |
+| **BuildGrid** | Remote execution + cache | Apache-2.0 REAPI server |
+| **bazel-remote** | Remote cache only | Useful cache-only option; not a remote execution backend |
+
+---
+
+## REAPI Clients To Keep In Mind
+
+Beyond Bazel, Buck2, and Reninja, the upstream `remote-apis` ecosystem also
+lists:
+
+- BuildStream
+- Justbuild
+- Pants
+- Please
+- Recc
+- Reclient
+- Siso
+
+`Reclient` is especially important because it is not a build system by itself;
+it integrates with an existing build system to enable remote execution and
+caching.
 
 ---
 

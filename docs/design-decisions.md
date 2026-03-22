@@ -67,6 +67,10 @@ only one at a time per deployment.
 - Both implement the same Remote Execution API v2, so Bazel, Buck2, and
   Reninja clients can target either backend.
 
+**Follow-up candidates**: NativeLink and BuildGrid are worth evaluating later
+as additional RBE backends, but are intentionally out of scope for the initial
+chart surface.
+
 ---
 
 ## DD-005: Cluster Profiles via Values Files

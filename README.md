@@ -43,7 +43,7 @@ rek8s solves this by providing:
 
 | Role | Provider | What it does | License |
 |------|----------|-------------|---------|
-| **BES** | [BuildBuddy OSS](https://github.com/buildbuddy-io/buildbuddy) | Build Event Service + Remote Cache + Web UI | MIT |
+| **BES** | [BuildBuddy OSS](https://github.com/buildbuddy-io/buildbuddy-foss) | Build Event Service + Remote Cache + Web UI | MIT |
 | **RBE** | [Buildfarm](https://github.com/bazelbuild/bazel-buildfarm) | Remote Execution + CAS (Java, Redis backplane) | Apache-2.0 |
 | **RBE** | [Buildbarn](https://github.com/buildbarn) | Remote Execution + CAS (Go, modular architecture) | Apache-2.0 |
 
@@ -54,6 +54,13 @@ BES and RBE are **independent axes** -- you can deploy:
 
 Only one RBE provider can be active at a time (both implement the same
 [Remote Execution API v2](https://github.com/bazelbuild/remote-apis)).
+
+rek8s currently ships **Buildfarm** and **Buildbarn** as charted RBE providers.
+Other notable REAPI servers worth tracking include
+[NativeLink](https://github.com/TraceMachina/nativelink),
+[BuildGrid](https://buildgrid.build/), and cache-only
+[bazel-remote](https://github.com/buchgr/bazel-remote). See
+[`docs/reapi-ecosystem.md`](docs/reapi-ecosystem.md).
 
 ## Quick Start
 
@@ -381,14 +388,17 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Design Decisions](docs/design-decisions.md) | 12 architectural decision records with rationale |
 | [Cluster Requirements](docs/cluster-requirements.md) | CRD prerequisites, cluster profiles, resource sizing |
 | [Component Matrix](docs/component-matrix.md) | Buildfarm vs Buildbarn comparison, BES feature matrix |
+| [REAPI Ecosystem](docs/reapi-ecosystem.md) | Known REAPI servers and clients beyond the providers charted today |
 
 ## Related Projects
 
 - [bazel-buildfarm](https://github.com/bazelbuild/bazel-buildfarm) --
   Bazel's reference RBE implementation
 - [buildbarn](https://github.com/buildbarn) -- Modular Go-based RBE
-- [buildbuddy](https://github.com/buildbuddy-io/buildbuddy) -- BES + Remote
+- [buildbuddy-foss](https://github.com/buildbuddy-io/buildbuddy-foss) -- BES + Remote
   Cache (OSS) and RBE (Enterprise)
+- [nativelink](https://github.com/TraceMachina/nativelink) -- Additional REAPI
+  server worth tracking for future backend support
 - [reninja](https://github.com/buildbuddy-io/reninja) -- Ninja-compatible
   REAPI client with BES, remote cache, and remote execution support
 - [Remote Execution API](https://github.com/bazelbuild/remote-apis) --
