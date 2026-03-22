@@ -1,0 +1,77 @@
+# rek8s cluster profile: Vultr Kubernetes Engine (VKE)
+#
+# For VKE clusters using:
+#   - Vultr's default Calico CNI
+#   - a user-installed ingress controller such as ingress-nginx
+#   - Vultr Block Storage via the managed CSI driver
+#
+# Prerequisites:
+#   - ingress-nginx installed on the cluster
+#   - ingressClassName nginx available
+#   - cert-manager installed if TLS is enabled
+#   - NVMe-capable region preferred for worker PVC performance
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/vultr-vke.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "vultr-block-storage"  # NVMe-backed when available
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: disk
+      disk:
+        size: 50Gi
+    database:
+      type: mysql
+      # mysql:
+      #   host: mysql.internal.example
+      #   port: 3306
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-mysql
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: nginx
+    className: nginx
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

@@ -166,6 +166,9 @@ Use them as-is or as a starting point for your own configuration.
 | [`aks`](examples/cluster-profiles/aks.yaml) | Azure CNI / Cilium | Managed nginx | Standard k8s | cert-manager | Azure Kubernetes Service |
 | [`oke`](examples/cluster-profiles/oke.yaml) | OKE CNI | ingress-nginx | Standard k8s | cert-manager | Oracle Kubernetes Engine |
 | [`magalu-cloud`](examples/cluster-profiles/magalu-cloud.yaml) | Magalu Cloud | ingress-nginx | Standard k8s | cert-manager | Magalu Cloud Kubernetes |
+| [`vultr-vke`](examples/cluster-profiles/vultr-vke.yaml) | Vultr / Calico | ingress-nginx | Standard k8s | cert-manager | Vultr Kubernetes Engine |
+| [`linode-lke`](examples/cluster-profiles/linode-lke.yaml) | LKE / Calico | ingress-nginx | Standard k8s | cert-manager | Akamai Cloud / Linode Kubernetes Engine |
+| [`scaleway-kapsule`](examples/cluster-profiles/scaleway-kapsule.yaml) | Kapsule / Cilium or Calico | ingress-nginx | Standard k8s | cert-manager | Scaleway Kubernetes Kapsule |
 | [`vanilla`](examples/cluster-profiles/vanilla.yaml) | Any | None (NodePort) | Disabled | Disabled | Dev / CI |
 
 ```bash
@@ -181,6 +184,8 @@ helm install rek8s ./charts/rek8s \
 
 For platform-specific deployment guidance and cloud gotchas, see
 [`docs/major-platform-deployments.md`](docs/major-platform-deployments.md).
+For the next expansion wave and platform prioritization, see
+[`docs/next-platform-roadmap.md`](docs/next-platform-roadmap.md).
 
 ## Configuration
 

@@ -11,6 +11,9 @@ the major Kubernetes targets we care about now:
 - Azure Kubernetes Service (AKS)
 - Oracle Kubernetes Engine (OKE)
 - Magalu Cloud Kubernetes
+- Vultr Kubernetes Engine (VKE)
+- Akamai Cloud / Linode Kubernetes Engine (LKE)
+- Scaleway Kubernetes Kapsule
 
 These examples assume the same baseline stack unless stated otherwise:
 
@@ -36,6 +39,9 @@ first "real" ingress-backed baseline, start with
 | Azure AKS | [`aks.yaml`](../examples/cluster-profiles/aks.yaml) | managed nginx ingress | `managed-csi-premium` | standard k8s | Uses AKS application routing |
 | Oracle OKE | [`oke.yaml`](../examples/cluster-profiles/oke.yaml) | nginx ingress | `oci-bv` | standard k8s via Calico | OCI LB handled at ingress-controller layer |
 | Magalu Cloud | [`magalu-cloud.yaml`](../examples/cluster-profiles/magalu-cloud.yaml) | nginx ingress | `mgc-csi-magalu-sc` | standard k8s | Storage docs are strong; NP support should be verified |
+| Vultr VKE | [`vultr-vke.yaml`](../examples/cluster-profiles/vultr-vke.yaml) | nginx ingress | `vultr-block-storage` | standard k8s | Calico default, ingress controller is user-installed |
+| Linode LKE | [`linode-lke.yaml`](../examples/cluster-profiles/linode-lke.yaml) | nginx ingress | `linode-block-storage` | standard k8s | NodeBalancers back `LoadBalancer` services |
+| Scaleway Kapsule | [`scaleway-kapsule.yaml`](../examples/cluster-profiles/scaleway-kapsule.yaml) | nginx ingress | cluster default | standard k8s | Default Block Volume StorageClass, cilium/calico supported |
 
 ## Shared Guidance
 
@@ -256,6 +262,80 @@ Gotchas:
   about NetworkPolicy enforcement details. Validate policy behavior in-cluster
   before treating it as a hard security boundary.
 
+## Vultr Kubernetes Engine
+
+Example file:
+
+- [`examples/cluster-profiles/vultr-vke.yaml`](../examples/cluster-profiles/vultr-vke.yaml)
+
+Install:
+
+```bash
+helm install rek8s ./charts/rek8s \
+  -f examples/cluster-profiles/vultr-vke.yaml \
+  --set global.domain=build.example.com
+```
+
+Gotchas:
+
+- VKE uses Calico by default, but Vultr does not preinstall an ingress
+  controller, so `ingress-nginx` stays your responsibility.
+- Prefer `vultr-block-storage` over the HDD storage class for Buildfarm worker
+  PVCs; Vultr documents `vultr-block-storage-hdd` separately for cost-oriented
+  workloads.
+- Vultr block volumes are node-attached storage, so plan for `ReadWriteOnce`
+  semantics and zone/locality effects on rescheduling.
+
+## Akamai Cloud / Linode Kubernetes Engine
+
+Example file:
+
+- [`examples/cluster-profiles/linode-lke.yaml`](../examples/cluster-profiles/linode-lke.yaml)
+
+Install:
+
+```bash
+helm install rek8s ./charts/rek8s \
+  -f examples/cluster-profiles/linode-lke.yaml \
+  --set global.domain=build.example.com
+```
+
+Gotchas:
+
+- LKE creates managed NodeBalancers for `LoadBalancer` services through the
+  Linode Cloud Controller Manager.
+- Use `linode-block-storage` unless you intentionally want retained disks via
+  `linode-block-storage-retain`.
+- Akamai explicitly recommends moving application data to persistent volumes
+  before maintenance and node-drain workflows.
+- If you want node-level perimeter controls, document Cloud Firewall Controller
+  alongside the profile instead of trying to fold it into the chart.
+
+## Scaleway Kubernetes Kapsule
+
+Example file:
+
+- [`examples/cluster-profiles/scaleway-kapsule.yaml`](../examples/cluster-profiles/scaleway-kapsule.yaml)
+
+Install:
+
+```bash
+helm install rek8s ./charts/rek8s \
+  -f examples/cluster-profiles/scaleway-kapsule.yaml \
+  --set global.domain=build.example.com
+```
+
+Gotchas:
+
+- Kapsule supports both `cilium` and `calico`; confirm which one your cluster
+  uses before debugging policy behavior.
+- Scaleway documents a default Block Volume StorageClass, so the profile leaves
+  `global.storageClass` unset on purpose.
+- Kapsule nodes are explicitly treated as stateless by the platform docs; keep
+  state on PVCs, not node disks.
+- Scaleway auto-upgrades unsupported Kubernetes minors after the support window,
+  so long-lived clusters need version hygiene.
+
 ## Sources
 
 These profiles and gotchas were aligned against current primary sources on
@@ -281,6 +361,18 @@ March 22, 2026.
 - Magalu Cloud load balancers: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/load-balancers/overview/>
 - Magalu Cloud persistent volumes: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/persistent-volumes/overview/>
 - Magalu Cloud storage class details: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/persistent-volumes/storage-class/>
+- Vultr Kubernetes overview: <https://docs.vultr.com/products/kubernetes>
+- Vultr ingress controller FAQ: <https://docs.vultr.com/support/products/vke/does-vke-come-with-an-ingress-controller>
+- Vultr persistent storage FAQ: <https://docs.vultr.com/support/products/vke/how-does-vultr-kubernetes-engine-handle-persistent-data-storage>
+- Vultr PVC guide: <https://docs.vultr.com/how-to-provision-persistent-volume-claims-on-vultr-kubernetes-engine>
+- Akamai Cloud getting started: <https://techdocs.akamai.com/cloud-computing/docs/getting-started>
+- Akamai LKE load balancing: <https://techdocs.akamai.com/cloud-computing/docs/get-started-with-load-balancing-on-an-lke-cluster>
+- Akamai Block Storage: <https://techdocs.akamai.com/cloud-computing/docs/block-storage>
+- Akamai LKE firewall details: <https://techdocs.akamai.com/cloud-computing/docs/lke-network-firewall-details>
+- Scaleway Kubernetes docs: <https://www.scaleway.com/en/docs/kubernetes/>
+- Scaleway Kubernetes API: <https://www.scaleway.com/en/developers/api/kubernetes/>
+- Scaleway version support policy: <https://www.scaleway.com/en/docs/kubernetes/reference-content/version-support-policy//>
+- Scaleway Kapsule overview: <https://www.scaleway.com/en/kubernetes-kapsule/>
 - Oracle OKE ingress controllers: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengmanagingresscontrollers.htm>
 - Oracle OKE nginx ingress example: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengsettingupingresscontroller.htm>
 - Oracle OKE block volume PVCs: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingpersistentvolumeclaim_topic-Provisioning_PVCs_on_BV.htm>

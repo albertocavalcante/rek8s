@@ -90,6 +90,9 @@ Kubernetes cluster configurations.
   - `aks.yaml` -- AKS with managed nginx ingress
   - `oke.yaml` -- OKE with nginx ingress + OCI block volumes
   - `magalu-cloud.yaml` -- Magalu Cloud with nginx ingress + block storage
+  - `vultr-vke.yaml` -- Vultr VKE with nginx ingress + block storage
+  - `linode-lke.yaml` -- Akamai / Linode LKE with nginx ingress + block storage
+  - `scaleway-kapsule.yaml` -- Scaleway Kapsule with nginx ingress
   - `vanilla-nginx.yaml` -- generic Kubernetes + ingress-nginx
   - `vanilla.yaml` -- minimal local / CI footprint without ingress
 

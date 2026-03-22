@@ -233,6 +233,39 @@ Storage:          mgc-csi-magalu-sc
 Monitoring:       Prometheus Operator (optional)
 ```
 
+### `vultr-vke` (Vultr Kubernetes Engine)
+
+```
+CNI:              Calico
+Ingress:          nginx Ingress Controller
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          vultr-block-storage
+Monitoring:       Prometheus Operator (optional)
+```
+
+### `linode-lke` (Akamai Cloud / Linode Kubernetes Engine)
+
+```
+CNI:              Calico
+Ingress:          nginx Ingress Controller
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          linode-block-storage
+Monitoring:       Prometheus Operator (optional)
+```
+
+### `scaleway-kapsule` (Scaleway Kubernetes Kapsule)
+
+```
+CNI:              cilium or calico
+Ingress:          nginx Ingress Controller
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          Default Scaleway Block Volume StorageClass
+Monitoring:       Prometheus Operator (optional)
+```
+
 ### `docker-desktop` (Local Docker Desktop)
 
 ```
