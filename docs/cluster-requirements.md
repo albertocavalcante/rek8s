@@ -266,6 +266,17 @@ Storage:          Default Scaleway Block Volume StorageClass
 Monitoring:       Prometheus Operator (optional)
 ```
 
+### `ibm-cloud-vpc` (IBM Cloud Kubernetes Service)
+
+```
+CNI:              Calico
+Ingress:          nginx Ingress Controller
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          ibmc-vpc-block-10iops-tier
+Monitoring:       IBM Cloud Monitoring or Prometheus Operator
+```
+
 ### `docker-desktop` (Local Docker Desktop)
 
 ```

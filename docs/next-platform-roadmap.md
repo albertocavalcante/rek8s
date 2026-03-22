@@ -76,18 +76,16 @@ the immediate adds above.
 
 ### IBM Cloud Kubernetes Service
 
-Why next:
+Status: added in [`ibm-cloud-vpc.yaml`](../examples/cluster-profiles/ibm-cloud-vpc.yaml)
 
-- IBM ships Calico and predefined block storage classes.
-- IBM VPC load balancers integrate cleanly with Kubernetes `LoadBalancer`
+Why it graduated:
+
+- IBM documents VPC load balancers created from Kubernetes `LoadBalancer`
   services.
-
-Why not immediate:
-
-- VPC and classic cluster documentation diverge.
-- Load-balancer behavior and unsupported annotations need a dedicated profile
-  doc instead of a quick copy of an nginx-based profile.
-- Storage class naming differs between storage backends and cluster types.
+- IBM documents standard Kubernetes network policies and Calico advanced
+  policies.
+- IBM provides a clear VPC block-storage class reference, including
+  `ibmc-vpc-block-10iops-tier`.
 
 ### Alibaba Cloud ACK
 
@@ -100,8 +98,9 @@ Why not immediate:
 
 - Identity, storage, and ingress integrations are more provider-specific than
   the current simple nginx-based pattern.
-- We should decide whether the first ACK profile should target classic Ingress,
-  managed Gateway API, or a cloud-native ingress product.
+- Alibaba changed default load-balancer behavior for new Services and NGINX
+  ingress installs toward NLB in 2025, so the first profile should be a
+  deliberate ACK opinion, not a generic copy.
 
 ## Separate Track: OpenShift
 

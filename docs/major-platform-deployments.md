@@ -14,6 +14,7 @@ the major Kubernetes targets we care about now:
 - Vultr Kubernetes Engine (VKE)
 - Akamai Cloud / Linode Kubernetes Engine (LKE)
 - Scaleway Kubernetes Kapsule
+- IBM Cloud Kubernetes Service
 
 These examples assume the same baseline stack unless stated otherwise:
 
@@ -42,6 +43,7 @@ first "real" ingress-backed baseline, start with
 | Vultr VKE | [`vultr-vke.yaml`](../examples/cluster-profiles/vultr-vke.yaml) | nginx ingress | `vultr-block-storage` | standard k8s | Calico default, ingress controller is user-installed |
 | Linode LKE | [`linode-lke.yaml`](../examples/cluster-profiles/linode-lke.yaml) | nginx ingress | `linode-block-storage` | standard k8s | NodeBalancers back `LoadBalancer` services |
 | Scaleway Kapsule | [`scaleway-kapsule.yaml`](../examples/cluster-profiles/scaleway-kapsule.yaml) | nginx ingress | cluster default | standard k8s | Default Block Volume StorageClass, cilium/calico supported |
+| IBM Cloud KS | [`ibm-cloud-vpc.yaml`](../examples/cluster-profiles/ibm-cloud-vpc.yaml) | nginx ingress | `ibmc-vpc-block-10iops-tier` | standard k8s | VPC ALB/NLB options behind `LoadBalancer` services |
 
 ## Shared Guidance
 
@@ -336,6 +338,31 @@ Gotchas:
 - Scaleway auto-upgrades unsupported Kubernetes minors after the support window,
   so long-lived clusters need version hygiene.
 
+## IBM Cloud Kubernetes Service
+
+Example file:
+
+- [`examples/cluster-profiles/ibm-cloud-vpc.yaml`](../examples/cluster-profiles/ibm-cloud-vpc.yaml)
+
+Install:
+
+```bash
+helm install rek8s ./charts/rek8s \
+  -f examples/cluster-profiles/ibm-cloud-vpc.yaml \
+  --set global.domain=build.example.com
+```
+
+Gotchas:
+
+- IBM Cloud VPC clusters expose apps through VPC ALBs or VPC NLBs created from
+  `LoadBalancer` services outside the cluster.
+- IBM documents Kubernetes network policies for pod-level control and Calico
+  for more advanced network policy scenarios, especially on classic clusters.
+- `ibmc-vpc-block-10iops-tier` is a conservative first profile choice; IBM also
+  exposes newer SDP classes and metro `WaitForFirstConsumer` classes.
+- IBM limits one VPC load balancer per `LoadBalancer` service and caps the total
+  number of VPC load balancers across VPC clusters in the VPC.
+
 ## Sources
 
 These profiles and gotchas were aligned against current primary sources on
@@ -373,6 +400,9 @@ March 22, 2026.
 - Scaleway Kubernetes API: <https://www.scaleway.com/en/developers/api/kubernetes/>
 - Scaleway version support policy: <https://www.scaleway.com/en/docs/kubernetes/reference-content/version-support-policy//>
 - Scaleway Kapsule overview: <https://www.scaleway.com/en/kubernetes-kapsule/>
+- IBM Cloud VPC load balancers: <https://cloud.ibm.com/docs/containers?topic=containers-vpclb-about>
+- IBM Cloud Kubernetes network policies: <https://cloud.ibm.com/docs/containers?topic=containers-network_policies>
+- IBM Cloud block storage for VPC: <https://cloud.ibm.com/docs/containers?topic=containers-storage-block-vpc-sc-ref>
 - Oracle OKE ingress controllers: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengmanagingresscontrollers.htm>
 - Oracle OKE nginx ingress example: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengsettingupingresscontroller.htm>
 - Oracle OKE block volume PVCs: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingpersistentvolumeclaim_topic-Provisioning_PVCs_on_BV.htm>
