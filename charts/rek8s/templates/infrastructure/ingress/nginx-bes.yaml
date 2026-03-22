@@ -1,0 +1,65 @@
+{{- if and .Values.cluster.ingress.enabled (eq .Values.cluster.ingress.provider "nginx") .Values.bes.buildbuddy.enabled }}
+# nginx Ingress for BuildBuddy -- Web UI
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-http
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  annotations:
+    {{- include "rek8s.nginxAnnotations" (dict "root" . "mode" "http") | nindent 4 }}
+spec:
+  {{- if .Values.cluster.ingress.className }}
+  ingressClassName: {{ .Values.cluster.ingress.className | quote }}
+  {{- end }}
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ include "rek8s.bes.hostname" . | quote }}
+      secretName: {{ include "rek8s.fullname" . }}-bes-tls
+  {{- end }}
+  rules:
+    - host: {{ include "rek8s.bes.hostname" . | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rek8s.fullname" . }}-buildbuddy
+                port:
+                  number: {{ .Values.bes.buildbuddy.service.httpPort }}
+---
+# nginx Ingress for BuildBuddy -- BES + Remote Cache gRPC
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-grpc
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  annotations:
+    {{- include "rek8s.nginxAnnotations" (dict "root" . "mode" "grpc") | nindent 4 }}
+spec:
+  {{- if .Values.cluster.ingress.className }}
+  ingressClassName: {{ .Values.cluster.ingress.className | quote }}
+  {{- end }}
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ include "rek8s.bes.grpcHostname" . | quote }}
+      secretName: {{ include "rek8s.fullname" . }}-bes-grpc-tls
+  {{- end }}
+  rules:
+    - host: {{ include "rek8s.bes.grpcHostname" . | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rek8s.fullname" . }}-buildbuddy
+                port:
+                  number: {{ .Values.bes.buildbuddy.service.grpcPort }}
+{{- end }}

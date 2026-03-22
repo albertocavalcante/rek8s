@@ -158,7 +158,14 @@ Use them as-is or as a starting point for your own configuration.
 |---------|-----|---------|---------------|-----|----------|
 | [`calico-contour`](examples/cluster-profiles/calico-contour.yaml) | Calico | Contour HTTPProxy | Calico v3 | cert-manager | On-prem production |
 | [`calico-gateway-api`](examples/cluster-profiles/calico-gateway-api.yaml) | Calico | Gateway API | Calico v3 | cert-manager | Modern on-prem |
+| [`vanilla-nginx`](examples/cluster-profiles/vanilla-nginx.yaml) | Any CNI with netpol support | ingress-nginx | Standard k8s | cert-manager | Generic upstream Kubernetes |
+| [`docker-desktop`](examples/cluster-profiles/docker-desktop.yaml) | Docker Desktop | None (port-forward) | Disabled | Disabled | Local experimentation |
 | [`gke`](examples/cluster-profiles/gke.yaml) | GKE Dataplane V2 | Gateway API | Standard k8s | cert-manager | Google Cloud |
+| [`digitalocean`](examples/cluster-profiles/digitalocean.yaml) | DOKS / Cilium | Gateway API | Standard k8s | cert-manager | DigitalOcean Kubernetes |
+| [`eks`](examples/cluster-profiles/eks.yaml) | AWS VPC CNI | ingress-nginx | Standard k8s | cert-manager | Amazon EKS |
+| [`aks`](examples/cluster-profiles/aks.yaml) | Azure CNI / Cilium | Managed nginx | Standard k8s | cert-manager | Azure Kubernetes Service |
+| [`oke`](examples/cluster-profiles/oke.yaml) | OKE CNI | ingress-nginx | Standard k8s | cert-manager | Oracle Kubernetes Engine |
+| [`magalu-cloud`](examples/cluster-profiles/magalu-cloud.yaml) | Magalu Cloud | ingress-nginx | Standard k8s | cert-manager | Magalu Cloud Kubernetes |
 | [`vanilla`](examples/cluster-profiles/vanilla.yaml) | Any | None (NodePort) | Disabled | Disabled | Dev / CI |
 
 ```bash
@@ -171,6 +178,9 @@ helm install rek8s ./charts/rek8s \
   --set global.domain=build.example.com \
   --set rbe.buildfarm.worker.replicaCount=8
 ```
+
+For platform-specific deployment guidance and cloud gotchas, see
+[`docs/major-platform-deployments.md`](docs/major-platform-deployments.md).
 
 ## Configuration
 

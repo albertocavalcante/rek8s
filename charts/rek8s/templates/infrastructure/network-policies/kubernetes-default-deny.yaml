@@ -1,0 +1,19 @@
+{{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "kubernetes") .Values.cluster.networkPolicy.defaultDeny.enabled }}
+# Standard Kubernetes NetworkPolicy cannot model the same ordered, CIDR-rich
+# policy set as Calico. This default deny focuses on ingress isolation while
+# leaving egress open so managed-cloud storage and database integrations
+# continue to work without provider-specific exceptions.
+{{- $namespaces := list .Values.namespaces.bes .Values.namespaces.rbe }}
+{{- range $ns := $namespaces }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: {{ $ns }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+{{- end }}
+{{- end }}

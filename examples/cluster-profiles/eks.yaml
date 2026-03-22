@@ -1,0 +1,77 @@
+# rek8s cluster profile: Amazon EKS
+#
+# For EKS clusters using:
+#   - VPC CNI network policy support
+#   - ingress-nginx or another nginx-compatible ingress class
+#   - Amazon EBS CSI volumes
+#
+# Prerequisites:
+#   - AWS Load Balancer Controller and/or ingress-nginx installed
+#   - Amazon EBS CSI add-on installed with permissions
+#   - ingressClassName nginx available in the cluster
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/eks.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "gp3"
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: s3
+      # s3:
+      #   region: us-east-1
+      #   bucket: rek8s-buildbuddy
+    database:
+      type: mysql
+      # mysql:
+      #   host: buildbuddy.cluster-abcdefghijkl.us-east-1.rds.amazonaws.com
+      #   port: 3306
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-mysql
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: nginx
+    className: nginx
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

@@ -1,0 +1,81 @@
+# rek8s cluster profile: DigitalOcean Kubernetes (DOKS)
+#
+# For DOKS clusters using:
+#   - VPC-native networking
+#   - managed Gateway API with Cilium
+#   - cert-manager for TLS secrets inside the cluster
+#   - DigitalOcean block storage
+#
+# Prerequisites:
+#   - DOKS cluster running Kubernetes 1.33+ with VPC-native networking
+#   - Gateway named rek8s-public created from examples/gateways/doks-cilium-gateway.yaml
+#   - the Gateway listener Secret created in the rek8s-ingress namespace if TLS is enabled
+#   - cert-manager installed if TLS is enabled
+#
+# Usage:
+#   kubectl apply -f examples/gateways/doks-cilium-gateway.yaml
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/digitalocean.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "do-block-storage"
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: disk
+      disk:
+        size: 50Gi
+    database:
+      type: mysql
+      # mysql:
+      #   host: db-cluster-do-user-1234567-0.db.ondigitalocean.com
+      #   port: 25060
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-mysql
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: gateway-api
+    gatewayRef:
+      name: rek8s-public
+      namespace: rek8s-ingress
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

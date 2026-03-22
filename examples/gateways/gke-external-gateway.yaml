@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rek8s-ingress
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: rek8s-public
+  namespace: rek8s-ingress
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          # Create this Secret in the Gateway namespace, or replace this
+          # pattern with the GKE Certificate Manager certmap annotation.
+          - kind: Secret
+            name: placeholder-gke-gateway-cert

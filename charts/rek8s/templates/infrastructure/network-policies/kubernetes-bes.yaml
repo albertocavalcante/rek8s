@@ -1,0 +1,31 @@
+{{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "kubernetes") .Values.bes.buildbuddy.enabled }}
+# Allow ingress to BuildBuddy service ports while keeping the namespace
+# ingress-isolated by default.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-ingress
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: buildbuddy
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 1985
+    - ports:
+        - protocol: TCP
+          port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.namespaces.monitoring | quote }}
+      ports:
+        - protocol: TCP
+          port: 9090
+{{- end }}

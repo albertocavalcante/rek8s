@@ -8,15 +8,19 @@
 #
 # Prerequisites:
 #   - GKE cluster with Gateway API enabled
+#   - Gateway named rek8s-public created from examples/gateways/gke-external-gateway.yaml
+#   - listener TLS Secret created in the rek8s-ingress namespace, or replace the
+#     example with a Certificate Manager certmap-backed Gateway
 #   - cert-manager installed
 #   - GCS bucket created for BuildBuddy storage
 #
 # Usage:
+#   kubectl apply -f examples/gateways/gke-external-gateway.yaml
 #   helm install rek8s ./charts/rek8s \
 #     -f examples/cluster-profiles/gke.yaml \
 #     --set global.domain=build.mycompany.com \
-#     --set cluster.ingress.gatewayRef.name=gke-gateway \
-#     --set cluster.ingress.gatewayRef.namespace=infra
+#     --set cluster.ingress.gatewayRef.name=rek8s-public \
+#     --set cluster.ingress.gatewayRef.namespace=rek8s-ingress
 
 global:
   domain: "build.example.com"
@@ -69,8 +73,8 @@ cluster:
     enabled: true
     provider: gateway-api
     gatewayRef:
-      name: gke-gateway
-      namespace: infra
+      name: rek8s-public
+      namespace: rek8s-ingress
 
   certManager:
     enabled: true

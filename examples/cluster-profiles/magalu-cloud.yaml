@@ -1,0 +1,76 @@
+# rek8s cluster profile: Magalu Cloud Kubernetes
+#
+# For Magalu Cloud managed Kubernetes using:
+#   - the default v3 block-storage CSI class
+#   - nginx ingress controller
+#   - standard Kubernetes networking primitives
+#
+# Prerequisites:
+#   - platform v3 recommended (default StorageClass: mgc-csi-magalu-sc)
+#   - nginx ingress controller installed
+#   - cert-manager installed if TLS is enabled
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/magalu-cloud.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "mgc-csi-magalu-sc"
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: disk
+      disk:
+        size: 50Gi
+    database:
+      type: mysql
+      # mysql:
+      #   host: mysql.internal.example
+      #   port: 3306
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-mysql
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: nginx
+    className: nginx
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

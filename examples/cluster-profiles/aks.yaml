@@ -1,0 +1,76 @@
+# rek8s cluster profile: Azure Kubernetes Service (AKS)
+#
+# For AKS clusters using:
+#   - Azure CNI powered by Cilium
+#   - the AKS application routing add-on (managed nginx ingress)
+#   - Azure Disk CSI
+#
+# Prerequisites:
+#   - AKS application routing add-on enabled
+#   - cert-manager installed if TLS is enabled
+#   - managed identity cluster, which application routing requires
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/aks.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "managed-csi-premium"
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: disk
+      disk:
+        size: 50Gi
+    database:
+      type: mysql
+      # mysql:
+      #   host: buildbuddy-mysql.mysql.database.azure.com
+      #   port: 3306
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-mysql
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: nginx
+    className: webapprouting.kubernetes.azure.com
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

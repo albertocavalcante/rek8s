@@ -117,3 +117,23 @@ Ingress API version based on provider
 {{- print "networking.k8s.io/v1" }}
 {{- end }}
 {{- end }}
+
+{{/*
+Annotations for nginx ingress resources.
+User-supplied annotations override the built-in defaults.
+*/}}
+{{- define "rek8s.nginxAnnotations" -}}
+{{- $root := .root -}}
+{{- $mode := .mode | default "http" -}}
+{{- $annotations := dict -}}
+{{- $_ := set $annotations "nginx.ingress.kubernetes.io/ssl-redirect" (ternary "true" "false" $root.Values.global.tls.enabled) -}}
+{{- if eq $mode "grpc" -}}
+{{- $_ := set $annotations "nginx.ingress.kubernetes.io/backend-protocol" "GRPC" -}}
+{{- $_ := set $annotations "nginx.ingress.kubernetes.io/proxy-read-timeout" "3600" -}}
+{{- $_ := set $annotations "nginx.ingress.kubernetes.io/proxy-send-timeout" "3600" -}}
+{{- end -}}
+{{- range $key, $value := $root.Values.cluster.ingress.annotations }}
+{{- $_ := set $annotations $key $value -}}
+{{- end -}}
+{{- toYaml $annotations -}}
+{{- end }}

@@ -84,10 +84,14 @@ Kubernetes cluster configurations.
   provide tested profiles:
   - `calico-contour.yaml` -- Calico CNI + Contour ingress (on-prem typical)
   - `calico-gateway-api.yaml` -- Calico CNI + Gateway API (modern on-prem)
-  - `cilium-gateway-api.yaml` -- Cilium CNI + Gateway API
+  - `digitalocean.yaml` -- DOKS / Cilium + Gateway API
   - `gke.yaml` -- GKE with standard networking
-  - `eks.yaml` -- EKS with AWS ALB + Calico
-  - `vanilla.yaml` -- Standard k8s NetworkPolicy + nginx ingress (minimal)
+  - `eks.yaml` -- EKS with ingress-nginx + EBS
+  - `aks.yaml` -- AKS with managed nginx ingress
+  - `oke.yaml` -- OKE with nginx ingress + OCI block volumes
+  - `magalu-cloud.yaml` -- Magalu Cloud with nginx ingress + block storage
+  - `vanilla-nginx.yaml` -- generic Kubernetes + ingress-nginx
+  - `vanilla.yaml` -- minimal local / CI footprint without ingress
 
 ---
 

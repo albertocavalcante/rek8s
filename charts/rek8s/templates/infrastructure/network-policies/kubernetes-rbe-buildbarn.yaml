@@ -1,0 +1,120 @@
+{{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "kubernetes") .Values.rbe.buildbarn.enabled }}
+# Buildbarn frontend ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-frontend-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: bb-frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8980
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.namespaces.monitoring | quote }}
+      ports:
+        - protocol: TCP
+          port: 9980
+---
+# Buildbarn storage shard ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-storage-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: bb-storage
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: bb-frontend
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: bb-worker
+      ports:
+        - protocol: TCP
+          port: 8981
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.namespaces.monitoring | quote }}
+      ports:
+        - protocol: TCP
+          port: 9980
+---
+# Buildbarn scheduler ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-scheduler-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: bb-scheduler
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: bb-frontend
+      ports:
+        - protocol: TCP
+          port: 8982
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: bb-worker
+      ports:
+        - protocol: TCP
+          port: 8983
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.namespaces.monitoring | quote }}
+      ports:
+        - protocol: TCP
+          port: 7982
+        - protocol: TCP
+          port: 9980
+{{- if .Values.rbe.buildbarn.browser.enabled }}
+---
+# Buildbarn browser ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-browser-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: bb-browser
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 7984
+{{- end }}
+{{- end }}

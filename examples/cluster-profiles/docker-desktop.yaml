@@ -1,0 +1,60 @@
+# rek8s cluster profile: Docker Desktop Kubernetes
+#
+# Intended for local experimentation on Docker Desktop. Keep this profile
+# small and simple; prefer port-forwarding over public ingress.
+#
+# Usage:
+#   kubectl config use-context docker-desktop
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/docker-desktop.yaml
+
+global:
+  domain: "localhost"
+  storageClass: ""  # use Docker Desktop's default host-backed provisioner
+  tls:
+    enabled: false
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 1
+    service:
+      type: ClusterIP
+    storage:
+      type: disk
+      disk:
+        size: 10Gi
+    database:
+      type: sqlite
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 1
+    worker:
+      replicaCount: 1
+      storage:
+        size: 20Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: false
+    provider: kubernetes
+
+  ingress:
+    enabled: false
+
+  certManager:
+    enabled: false
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

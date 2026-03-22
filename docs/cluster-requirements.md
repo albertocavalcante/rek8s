@@ -84,6 +84,11 @@ kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0
 No additional CRDs required. The CNI must support standard
 `networking.k8s.io/v1 NetworkPolicy`.
 
+**rek8s behavior**:
+- The standard Kubernetes policy path focuses on ingress isolation.
+- Egress remains open by design so managed cloud storage, SQL, ACME, and other
+  provider integrations continue to work without provider-specific exceptions.
+
 ### When `observability.prometheus.serviceMonitor: true`
 
 | CRD | API Group | Installed By |
@@ -171,28 +176,100 @@ Monitoring:       Google Cloud Monitoring + Prometheus
 ### `eks` (Elastic Kubernetes Service)
 
 ```
-CNI:              VPC CNI + Calico for NetworkPolicy
-Ingress:          AWS ALB Controller or Contour
-TLS:              cert-manager + ACM
-Network Policies: Calico (projectcalico.org/v3)
+CNI:              AWS VPC CNI
+Ingress:          ingress-nginx + AWS load balancer integration
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
 Storage:          gp3 EBS
 Monitoring:       Prometheus Operator
+```
+
+Notes:
+- Standard Kubernetes `NetworkPolicy` enforcement in EKS depends on Amazon VPC
+  CNI network-policy support.
+- The feature applies to Amazon EC2 Linux nodes, not Fargate or Windows nodes.
+
+### `aks` (Azure Kubernetes Service)
+
+```
+CNI:              Azure CNI powered by Cilium
+Ingress:          AKS application routing (managed nginx)
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          managed-csi / managed-csi-premium
+Monitoring:       Azure Monitor or Prometheus Operator
+```
+
+### `digitalocean` (DigitalOcean Kubernetes)
+
+```
+CNI:              Cilium
+Ingress:          Gateway API (Cilium)
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          do-block-storage
+Monitoring:       DOKS monitoring or Prometheus Operator
+```
+
+### `oke` (Oracle Kubernetes Engine)
+
+```
+CNI:              OKE CNI
+Ingress:          nginx Ingress Controller
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy via Calico policy engine
+Storage:          oci-bv
+Monitoring:       OCI Monitoring or Prometheus Operator
+```
+
+### `magalu-cloud` (Magalu Cloud Kubernetes)
+
+```
+CNI:              Managed Kubernetes default
+Ingress:          nginx Ingress Controller
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy (validate enforcement)
+Storage:          mgc-csi-magalu-sc
+Monitoring:       Prometheus Operator (optional)
+```
+
+### `docker-desktop` (Local Docker Desktop)
+
+```
+CNI:              Docker Desktop default
+Ingress:          None (port-forward)
+TLS:              Disabled
+Network Policies: Disabled
+Storage:          Docker Desktop default StorageClass
+Monitoring:       Optional
+```
+
+### `vanilla-nginx` (Generic Upstream Kubernetes)
+
+```
+CNI:              Any CNI with NetworkPolicy support
+Ingress:          ingress-nginx
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          Default or operator-provided StorageClass
+Monitoring:       Optional
 ```
 
 ### `vanilla` (Minimal / CI / Dev)
 
 ```
 CNI:              Any (flannel, kindnet, etc.)
-Ingress:          nginx Ingress Controller
-TLS:              Optional (self-signed)
-Network Policies: Standard Kubernetes (if CNI supports)
+Ingress:          None (NodePort / port-forward)
+TLS:              Disabled by default
+Network Policies: Disabled by default
 Storage:          Default StorageClass
 Monitoring:       Optional
 ```
 
 **Required CRDs**:
-- None beyond standard Kubernetes (Ingress v1 is built-in)
-- Optionally cert-manager for TLS
+- None beyond standard Kubernetes
+- Optionally cert-manager and an ingress controller if you evolve toward
+  `vanilla-nginx`
 
 ---
 

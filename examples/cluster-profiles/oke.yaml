@@ -1,0 +1,78 @@
+# rek8s cluster profile: Oracle Kubernetes Engine (OKE)
+#
+# For OKE clusters using:
+#   - nginx ingress controller
+#   - OCI load balancer integration
+#   - OCI Block Volume CSI storage class
+#   - Calico policy engine if you want Kubernetes NetworkPolicy enforcement
+#
+# Prerequisites:
+#   - nginx ingress controller installed on the cluster
+#   - ingressClassName nginx available
+#   - Calico installed if cluster.networkPolicy.enabled is kept true
+#   - cert-manager installed if TLS is enabled
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/oke.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "oci-bv"
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: disk
+      disk:
+        size: 50Gi
+    database:
+      type: mysql
+      # mysql:
+      #   host: mysql.private.example.oraclevcn.com
+      #   port: 3306
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-mysql
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: nginx
+    className: nginx
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

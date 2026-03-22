@@ -224,6 +224,12 @@ cluster:
     # nginx: generates networking.k8s.io/v1 Ingress with nginx annotations
     provider: contour
 
+    # Optional ingressClassName for providers backed by Ingress resources.
+    # Typical values:
+    #   nginx
+    #   webapprouting.kubernetes.azure.com
+    className: ""
+
     # Annotations applied to all ingress resources
     annotations: {}
 

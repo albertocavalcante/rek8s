@@ -1,0 +1,74 @@
+{{- if and .Values.cluster.ingress.enabled (eq .Values.cluster.ingress.provider "nginx") }}
+{{- if or .Values.rbe.buildfarm.enabled .Values.rbe.buildbarn.enabled }}
+# nginx Ingress for RBE -- Remote Execution + CAS + AC gRPC
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rek8s.fullname" . }}-rbe-grpc
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  annotations:
+    {{- include "rek8s.nginxAnnotations" (dict "root" . "mode" "grpc") | nindent 4 }}
+spec:
+  {{- if .Values.cluster.ingress.className }}
+  ingressClassName: {{ .Values.cluster.ingress.className | quote }}
+  {{- end }}
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ include "rek8s.rbe.hostname" . | quote }}
+      secretName: {{ include "rek8s.fullname" . }}-rbe-tls
+  {{- end }}
+  rules:
+    - host: {{ include "rek8s.rbe.hostname" . | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                {{- if .Values.rbe.buildfarm.enabled }}
+                name: {{ include "rek8s.fullname" . }}-buildfarm-server
+                {{- end }}
+                {{- if .Values.rbe.buildbarn.enabled }}
+                name: {{ include "rek8s.fullname" . }}-bb-frontend
+                {{- end }}
+                port:
+                  number: 8980
+{{- end }}
+{{- if and .Values.rbe.buildbarn.enabled .Values.rbe.buildbarn.browser.enabled }}
+---
+# nginx Ingress for Buildbarn browser UI
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-browser
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  annotations:
+    {{- include "rek8s.nginxAnnotations" (dict "root" . "mode" "http") | nindent 4 }}
+spec:
+  {{- if .Values.cluster.ingress.className }}
+  ingressClassName: {{ .Values.cluster.ingress.className | quote }}
+  {{- end }}
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ include "rek8s.bb.browserHostname" . | quote }}
+      secretName: {{ include "rek8s.fullname" . }}-bb-browser-tls
+  {{- end }}
+  rules:
+    - host: {{ include "rek8s.bb.browserHostname" . | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rek8s.fullname" . }}-bb-browser
+                port:
+                  number: 7984
+{{- end }}
+{{- end }}
