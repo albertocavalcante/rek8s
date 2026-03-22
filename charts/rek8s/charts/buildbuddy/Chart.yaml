@@ -1,0 +1,13 @@
+apiVersion: v2
+name: buildbuddy
+description: >-
+  BuildBuddy OSS subchart for rek8s. Deploys the BuildBuddy open-source
+  Build Event Service (BES) and Remote Cache server.
+type: application
+version: 0.0.1
+appVersion: "2.252.0"
+
+# This is a thin wrapper. In production, consider using the upstream
+# chart directly as a dependency:
+#   repository: https://helm.buildbuddy.io
+#   name: buildbuddy

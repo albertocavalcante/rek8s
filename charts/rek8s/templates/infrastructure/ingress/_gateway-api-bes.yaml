@@ -1,0 +1,43 @@
+{{- if and .Values.cluster.ingress.enabled (eq .Values.cluster.ingress.provider "gateway-api") .Values.bes.buildbuddy.enabled }}
+# Gateway API HTTPRoute for BuildBuddy -- Web UI
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-http
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ .Values.cluster.ingress.gatewayRef.name }}
+      namespace: {{ .Values.cluster.ingress.gatewayRef.namespace }}
+  hostnames:
+    - {{ include "rek8s.bes.hostname" . | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "rek8s.fullname" . }}-buildbuddy
+          port: {{ .Values.bes.buildbuddy.service.httpPort }}
+---
+# Gateway API GRPCRoute for BuildBuddy -- BES + Remote Cache
+apiVersion: gateway.networking.k8s.io/v1
+kind: GRPCRoute
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-grpc
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ .Values.cluster.ingress.gatewayRef.name }}
+      namespace: {{ .Values.cluster.ingress.gatewayRef.namespace }}
+  hostnames:
+    - {{ include "rek8s.bes.grpcHostname" . | quote }}
+  rules:
+    - backendRefs:
+        - name: {{ include "rek8s.fullname" . }}-buildbuddy
+          port: {{ .Values.bes.buildbuddy.service.grpcPort }}
+{{- end }}

@@ -1,0 +1,57 @@
+# Buildfarm subchart values
+# These are defaults; overridden by the parent chart's rbe.buildfarm.* values.
+
+server:
+  replicaCount: 2
+  image:
+    repository: bazelbuild/buildfarm-server
+    tag: "2.16.0"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8980
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+worker:
+  replicaCount: 3
+  image:
+    repository: bazelbuild/buildfarm-worker
+    tag: "2.16.0"
+    pullPolicy: IfNotPresent
+  port: 8982
+  storage:
+    size: 50Gi
+  capabilities:
+    cas: true
+    execution: true
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
+execWorker:
+  enabled: false
+  replicaCount: 2
+
+redis:
+  embedded: true
+  auth:
+    enabled: false
+
+config:
+  digestFunction: SHA256
+  maxEntrySizeBytes: 2147483648
+  prometheusPort: 9090
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

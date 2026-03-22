@@ -1,0 +1,153 @@
+{{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "calico") .Values.rbe.buildfarm.enabled }}
+# Buildfarm server ingress
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-buildfarm-server-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'buildfarm-server'
+  order: 100
+  types:
+    - Ingress
+  ingress:
+    # gRPC from external clients (via ingress)
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 8980
+    # gRPC from workers (operation reporting)
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: app.kubernetes.io/component in {'buildfarm-worker', 'buildfarm-exec-worker'}
+      destination:
+        ports:
+          - 8980
+    # Prometheus metrics
+    - action: Allow
+      protocol: TCP
+      source:
+        namespaceSelector: kubernetes.io/metadata.name == '{{ .Values.namespaces.monitoring }}'
+      destination:
+        ports:
+          - 9090
+---
+# Buildfarm server egress (to Redis)
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-buildfarm-server-egress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'buildfarm-server'
+  order: 100
+  types:
+    - Egress
+  egress:
+    # DNS
+    - action: Allow
+      protocol: UDP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    # Redis backplane
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component == 'redis'
+        ports:
+          - 6379
+---
+# Buildfarm worker ingress
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-buildfarm-worker-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'buildfarm-worker'
+  order: 100
+  types:
+    - Ingress
+  ingress:
+    # Peer-to-peer CAS transfers from other workers
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: app.kubernetes.io/component in {'buildfarm-worker', 'buildfarm-exec-worker'}
+      destination:
+        ports:
+          - 8982
+    # Prometheus metrics
+    - action: Allow
+      protocol: TCP
+      source:
+        namespaceSelector: kubernetes.io/metadata.name == '{{ .Values.namespaces.monitoring }}'
+      destination:
+        ports:
+          - 9090
+---
+# Buildfarm worker egress
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-buildfarm-worker-egress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'buildfarm-worker'
+  order: 100
+  types:
+    - Egress
+  egress:
+    # DNS
+    - action: Allow
+      protocol: UDP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    # Redis backplane
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component == 'redis'
+        ports:
+          - 6379
+    # Peer-to-peer CAS transfers
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component in {'buildfarm-worker', 'buildfarm-exec-worker'}
+        ports:
+          - 8982
+    # Server (operation reporting)
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component == 'buildfarm-server'
+        ports:
+          - 8980
+{{- end }}

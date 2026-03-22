@@ -1,0 +1,13 @@
+{{/*
+Validation rules -- rendered as a ConfigMap to trigger template errors.
+*/}}
+{{- include "rek8s.validateRBE" . }}
+
+{{- if and .Values.cluster.ingress.enabled (eq .Values.cluster.ingress.provider "gateway-api") }}
+{{- if not .Values.cluster.ingress.gatewayRef.name }}
+{{- fail "cluster.ingress.gatewayRef.name is required when using gateway-api ingress provider" }}
+{{- end }}
+{{- if not .Values.cluster.ingress.gatewayRef.namespace }}
+{{- fail "cluster.ingress.gatewayRef.namespace is required when using gateway-api ingress provider" }}
+{{- end }}
+{{- end }}

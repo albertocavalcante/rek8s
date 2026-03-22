@@ -1,0 +1,49 @@
+apiVersion: v2
+name: rek8s
+description: >-
+  Remote Execution on Kubernetes -- an umbrella Helm chart for deploying
+  Bazel BES and RBE infrastructure with pluggable providers, unified
+  networking, and cluster-aware configuration.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+keywords:
+  - bazel
+  - remote-execution
+  - remote-cache
+  - build-event-service
+  - buildfarm
+  - buildbarn
+  - buildbuddy
+  - rbe
+  - bes
+
+home: https://github.com/nicholasgasior/rek8s
+sources:
+  - https://github.com/nicholasgasior/rek8s
+
+maintainers:
+  - name: rek8s maintainers
+
+dependencies:
+  # BES: BuildBuddy OSS
+  - name: buildbuddy
+    version: "0.0.x"  # local subchart, pinned during development
+    repository: "file://charts/buildbuddy"
+    condition: bes.buildbuddy.enabled
+    alias: buildbuddy
+
+  # RBE: Buildfarm
+  - name: buildfarm
+    version: "0.0.x"
+    repository: "file://charts/buildfarm"
+    condition: rbe.buildfarm.enabled
+    alias: buildfarm
+
+  # RBE: Buildbarn
+  - name: buildbarn
+    version: "0.0.x"
+    repository: "file://charts/buildbarn"
+    condition: rbe.buildbarn.enabled
+    alias: buildbarn

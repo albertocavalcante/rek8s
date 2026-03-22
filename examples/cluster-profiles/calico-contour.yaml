@@ -1,0 +1,99 @@
+# rek8s cluster profile: Calico + Contour
+#
+# For on-premises clusters using:
+#   - Calico as CNI (with projectcalico.org/v3 NetworkPolicy support)
+#   - Contour as ingress controller (HTTPProxy CRD)
+#   - cert-manager for TLS
+#   - Prometheus Operator for monitoring
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/calico-contour.yaml \
+#     --set global.domain=build.mycompany.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "local-path"  # adjust to your cluster
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+namespaces:
+  create: true
+  bes: rek8s-bes
+  rbe: rek8s-rbe
+  monitoring: rek8s-monitoring
+
+# BES: BuildBuddy OSS
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: disk
+      disk:
+        size: 50Gi
+    database:
+      type: mysql
+      mysql:
+        host: mysql.rek8s-bes.svc
+        port: 3306
+        user: buildbuddy
+        database: buildbuddy
+        existingSecret: buildbuddy-mysql-credentials
+
+# RBE: Buildfarm (switch to buildbarn by changing enabled flags)
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+# Cluster: Calico + Contour
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: calico
+    defaultDeny:
+      enabled: true
+    allowedExternalCIDRs:
+      - 10.0.0.0/8
+
+  ingress:
+    enabled: true
+    provider: contour
+
+  certManager:
+    enabled: true
+
+# Observability
+observability:
+  prometheus:
+    serviceMonitor: true
+    interval: 30s
+    additionalLabels:
+      release: kube-prometheus-stack
+  grafana:
+    dashboards: true
+
+# HA settings
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 70

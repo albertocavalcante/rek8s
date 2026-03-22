@@ -1,0 +1,34 @@
+# BuildBuddy OSS subchart values
+# These are defaults; overridden by the parent chart's bes.buildbuddy.* values.
+
+replicaCount: 1
+
+image:
+  repository: gcr.io/flame-public/buildbuddy-app-onprem
+  tag: "v2.252.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  httpPort: 8080
+  grpcPort: 1985
+
+storage:
+  type: disk
+  disk:
+    size: 10Gi
+
+database:
+  type: sqlite
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

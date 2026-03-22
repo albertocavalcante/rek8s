@@ -1,0 +1,19 @@
+apiVersion: v2
+name: buildfarm
+description: >-
+  Bazel Buildfarm subchart for rek8s. Deploys the Buildfarm RBE server,
+  shard workers, and Redis backplane.
+type: application
+version: 0.0.1
+appVersion: "2.16.0"
+
+# This is a thin wrapper. The upstream chart can be used directly:
+#   repository: oci://ghcr.io/buildfarm/buildfarm
+#   version: "0.5.0"
+
+dependencies:
+  - name: redis
+    version: "~18.14.2"
+    repository: "oci://registry-1.docker.io/bitnamicharts"
+    condition: redis.embedded
+    alias: redis

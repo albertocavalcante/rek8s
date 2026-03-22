@@ -1,0 +1,274 @@
+# rek8s -- values.yaml
+#
+# This is the top-level configuration file for the rek8s umbrella chart.
+# It controls which BES/RBE providers are enabled and how the
+# infrastructure layer (networking, TLS, observability) is configured.
+
+# ---------------------------------------------------------------------------
+# Global settings shared across all subcharts
+# ---------------------------------------------------------------------------
+global:
+  # Base domain for all services. Services will be exposed as:
+  #   bes.<domain>      -- BuildBuddy UI + BES gRPC
+  #   rbe.<domain>      -- RBE gRPC endpoint
+  #   bb-browser.<domain> -- Buildbarn browser (if applicable)
+  domain: "example.com"
+
+  # Default storage class for all PVCs. Override per-component if needed.
+  storageClass: ""
+
+  # TLS configuration via cert-manager
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+      # group: cert-manager.io  # default, rarely changed
+
+  # Container image pull policy
+  imagePullPolicy: IfNotPresent
+
+  # Image pull secrets (list of secret names)
+  imagePullSecrets: []
+
+# ---------------------------------------------------------------------------
+# Namespace management
+# ---------------------------------------------------------------------------
+namespaces:
+  create: true
+  bes: rek8s-bes
+  rbe: rek8s-rbe
+  monitoring: rek8s-monitoring
+
+# ---------------------------------------------------------------------------
+# BES (Build Event Service) provider selection
+# ---------------------------------------------------------------------------
+bes:
+  # Only one BES provider is currently supported.
+  buildbuddy:
+    enabled: true
+
+    # Values passed to the buildbuddy subchart.
+    # See charts/buildbuddy/values.yaml for full reference.
+    replicaCount: 1
+
+    service:
+      type: ClusterIP
+      httpPort: 8080
+      grpcPort: 1985
+
+    storage:
+      # disk | s3 | gcs | minio | azure
+      type: disk
+      disk:
+        size: 10Gi
+      # s3:
+      #   region: us-east-1
+      #   bucket: rek8s-buildbuddy
+      # gcs:
+      #   bucket: rek8s-buildbuddy
+      #   project: my-project
+
+    database:
+      # sqlite | mysql
+      type: sqlite
+      # mysql:
+      #   host: mysql.rek8s-bes.svc
+      #   port: 3306
+      #   user: buildbuddy
+      #   password: ""
+      #   database: buildbuddy
+      #   existingSecret: ""
+
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+
+# ---------------------------------------------------------------------------
+# RBE (Remote Build Execution) provider selection
+#
+# Enable exactly ONE of buildfarm or buildbarn. Enabling both is a
+# validation error.
+# ---------------------------------------------------------------------------
+rbe:
+  buildfarm:
+    enabled: false
+
+    server:
+      replicaCount: 2
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 2000m
+          memory: 4Gi
+
+    worker:
+      replicaCount: 3
+      storage:
+        size: 50Gi
+      capabilities:
+        cas: true
+        execution: true
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 2Gi
+        limits:
+          cpu: 4000m
+          memory: 8Gi
+
+    execWorker:
+      enabled: false
+      replicaCount: 2
+
+    redis:
+      # embedded: use the Bitnami Redis subchart
+      # external: provide a URI
+      type: embedded
+      # externalUri: "redis://redis.rek8s-rbe.svc:6379"
+
+    config:
+      digestFunction: SHA256
+      maxEntrySizeBytes: 2147483648
+
+  buildbarn:
+    enabled: false
+
+    frontend:
+      replicaCount: 3
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+
+    storage:
+      shards: 2
+      casSize: 33Gi
+      acSize: 1Gi
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 2000m
+          memory: 4Gi
+
+    scheduler:
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+
+    worker:
+      replicaCount: 8
+      # Container image for build actions
+      runnerImage: "ghcr.io/catthehacker/ubuntu:act-22.04"
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 2Gi
+        limits:
+          cpu: 4000m
+          memory: 8Gi
+
+    browser:
+      enabled: true
+      replicaCount: 2
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+# ---------------------------------------------------------------------------
+# Cluster infrastructure configuration
+# ---------------------------------------------------------------------------
+cluster:
+  # -- Network policy generation
+  networkPolicy:
+    enabled: true
+    # calico: generates projectcalico.org/v3 NetworkPolicy + GlobalNetworkPolicy
+    # kubernetes: generates networking.k8s.io/v1 NetworkPolicy
+    provider: calico
+
+    # When using Calico, optionally deploy a default-deny GlobalNetworkPolicy
+    # for the rek8s namespaces.
+    defaultDeny:
+      enabled: true
+
+    # Extra CIDR ranges allowed to reach ingress endpoints (e.g., office IPs)
+    allowedExternalCIDRs: []
+    #   - 10.0.0.0/8
+    #   - 192.168.0.0/16
+
+  # -- Ingress configuration
+  ingress:
+    enabled: true
+    # contour: generates projectcontour.io/v1 HTTPProxy
+    # gateway-api: generates gateway.networking.k8s.io/v1 GRPCRoute + HTTPRoute
+    # nginx: generates networking.k8s.io/v1 Ingress with nginx annotations
+    provider: contour
+
+    # Annotations applied to all ingress resources
+    annotations: {}
+
+    # For gateway-api: reference to an existing Gateway
+    gatewayRef:
+      name: ""
+      namespace: ""
+
+  # -- cert-manager integration (used when global.tls.enabled)
+  certManager:
+    enabled: true
+    # Additional annotations for Certificate resources
+    annotations: {}
+
+# ---------------------------------------------------------------------------
+# Observability
+# ---------------------------------------------------------------------------
+observability:
+  prometheus:
+    # Generate ServiceMonitor resources for Prometheus Operator
+    serviceMonitor: true
+    # Scrape interval
+    interval: 30s
+    # Additional labels for ServiceMonitors (e.g., release: kube-prometheus-stack)
+    additionalLabels: {}
+
+  grafana:
+    # Deploy Grafana dashboard ConfigMaps
+    dashboards: false
+    # Label used by the Grafana sidecar to discover dashboards
+    sidecarLabel: grafana_dashboard
+    sidecarLabelValue: "1"
+
+# ---------------------------------------------------------------------------
+# Pod disruption budgets
+# ---------------------------------------------------------------------------
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+# ---------------------------------------------------------------------------
+# Autoscaling defaults
+# ---------------------------------------------------------------------------
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70

@@ -1,0 +1,71 @@
+{{- if and .Values.global.tls.enabled .Values.cluster.certManager.enabled }}
+{{- if .Values.bes.buildbuddy.enabled }}
+# TLS certificate for BES HTTP endpoint
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-tls
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  {{- with .Values.cluster.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  secretName: {{ include "rek8s.fullname" . }}-bes-tls
+  issuerRef:
+    name: {{ .Values.global.tls.issuerRef.name }}
+    kind: {{ .Values.global.tls.issuerRef.kind }}
+  dnsNames:
+    - {{ include "rek8s.bes.hostname" . }}
+  duration: 2160h    # 90 days
+  renewBefore: 360h  # 15 days before expiry
+---
+# TLS certificate for BES gRPC endpoint
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-grpc-tls
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  {{- with .Values.cluster.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  secretName: {{ include "rek8s.fullname" . }}-bes-grpc-tls
+  issuerRef:
+    name: {{ .Values.global.tls.issuerRef.name }}
+    kind: {{ .Values.global.tls.issuerRef.kind }}
+  dnsNames:
+    - {{ include "rek8s.bes.grpcHostname" . }}
+  duration: 2160h
+  renewBefore: 360h
+{{- end }}
+---
+{{- if or .Values.rbe.buildfarm.enabled .Values.rbe.buildbarn.enabled }}
+# TLS certificate for RBE gRPC endpoint
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rek8s.fullname" . }}-rbe-tls
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  {{- with .Values.cluster.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  secretName: {{ include "rek8s.fullname" . }}-rbe-tls
+  issuerRef:
+    name: {{ .Values.global.tls.issuerRef.name }}
+    kind: {{ .Values.global.tls.issuerRef.kind }}
+  dnsNames:
+    - {{ include "rek8s.rbe.hostname" . }}
+  duration: 2160h
+  renewBefore: 360h
+{{- end }}
+{{- end }}

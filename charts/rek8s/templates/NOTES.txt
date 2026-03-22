@@ -1,0 +1,46 @@
+===============================================================================
+  rek8s -- Remote Execution on Kubernetes
+===============================================================================
+
+{{- if .Values.bes.buildbuddy.enabled }}
+
+BES (BuildBuddy OSS):
+  {{- if .Values.cluster.ingress.enabled }}
+  Web UI:       https://{{ include "rek8s.bes.hostname" . }}
+  gRPC (BES):   grpcs://{{ include "rek8s.bes.grpcHostname" . }}:443
+  {{- else }}
+  kubectl port-forward -n {{ .Values.namespaces.bes }} svc/{{ include "rek8s.fullname" . }}-buildbuddy 8080:8080
+  kubectl port-forward -n {{ .Values.namespaces.bes }} svc/{{ include "rek8s.fullname" . }}-buildbuddy 1985:1985
+  {{- end }}
+{{- end }}
+
+{{- if .Values.rbe.buildfarm.enabled }}
+
+RBE (Buildfarm):
+  {{- if .Values.cluster.ingress.enabled }}
+  gRPC (REAPI): grpcs://{{ include "rek8s.rbe.hostname" . }}:443
+  {{- else }}
+  kubectl port-forward -n {{ .Values.namespaces.rbe }} svc/{{ include "rek8s.fullname" . }}-buildfarm-server 8980:8980
+  {{- end }}
+{{- end }}
+
+{{- if .Values.rbe.buildbarn.enabled }}
+
+RBE (Buildbarn):
+  {{- if .Values.cluster.ingress.enabled }}
+  gRPC (REAPI): grpcs://{{ include "rek8s.rbe.hostname" . }}:443
+  {{- else }}
+  kubectl port-forward -n {{ .Values.namespaces.rbe }} svc/{{ include "rek8s.fullname" . }}-bb-frontend 8980:8980
+  {{- end }}
+  {{- if .Values.rbe.buildbarn.browser.enabled }}
+  Browser:      https://{{ include "rek8s.bb.browserHostname" . }}
+  {{- end }}
+{{- end }}
+
+Add to your project's .bazelrc:
+
+  build:rek8s --bes_backend=grpcs://{{ include "rek8s.bes.grpcHostname" . }}:443
+  build:rek8s --bes_results_url=https://{{ include "rek8s.bes.hostname" . }}/invocation/
+  build:rek8s --remote_executor=grpcs://{{ include "rek8s.rbe.hostname" . }}:443
+
+Then build with:  bazel build --config=rek8s //...

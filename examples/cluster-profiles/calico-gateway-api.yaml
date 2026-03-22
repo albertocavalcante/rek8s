@@ -1,0 +1,77 @@
+# rek8s cluster profile: Calico + Gateway API
+#
+# For modern on-premises clusters using:
+#   - Calico as CNI
+#   - Gateway API with Contour or Envoy Gateway as the implementation
+#   - cert-manager for TLS
+#   - Prometheus Operator for monitoring
+#
+# Prerequisites:
+#   - Gateway API CRDs installed
+#   - A GatewayClass and Gateway resource deployed
+#   - cert-manager with a ClusterIssuer
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/calico-gateway-api.yaml \
+#     --set global.domain=build.mycompany.com \
+#     --set cluster.ingress.gatewayRef.name=production-gateway \
+#     --set cluster.ingress.gatewayRef.namespace=infra
+
+global:
+  domain: "build.example.com"
+  storageClass: "local-path"
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: s3
+      # s3:
+      #   region: us-east-1
+      #   bucket: rek8s-buildbuddy
+    database:
+      type: mysql
+
+rbe:
+  buildfarm:
+    enabled: false
+  buildbarn:
+    enabled: true
+    frontend:
+      replicaCount: 3
+    storage:
+      shards: 2
+      casSize: 50Gi
+      acSize: 2Gi
+    worker:
+      replicaCount: 8
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: calico
+    defaultDeny:
+      enabled: true
+
+  ingress:
+    enabled: true
+    provider: gateway-api
+    gatewayRef:
+      name: production-gateway
+      namespace: infra
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: true
+    additionalLabels:
+      release: kube-prometheus-stack

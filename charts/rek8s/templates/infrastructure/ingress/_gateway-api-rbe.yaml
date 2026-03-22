@@ -1,0 +1,28 @@
+{{- if and .Values.cluster.ingress.enabled (eq .Values.cluster.ingress.provider "gateway-api") }}
+{{- if or .Values.rbe.buildfarm.enabled .Values.rbe.buildbarn.enabled }}
+# Gateway API GRPCRoute for RBE -- Remote Execution + CAS + AC
+apiVersion: gateway.networking.k8s.io/v1
+kind: GRPCRoute
+metadata:
+  name: {{ include "rek8s.fullname" . }}-rbe-grpc
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ .Values.cluster.ingress.gatewayRef.name }}
+      namespace: {{ .Values.cluster.ingress.gatewayRef.namespace }}
+  hostnames:
+    - {{ include "rek8s.rbe.hostname" . | quote }}
+  rules:
+    - backendRefs:
+        {{- if .Values.rbe.buildfarm.enabled }}
+        - name: {{ include "rek8s.fullname" . }}-buildfarm-server
+          port: 8980
+        {{- end }}
+        {{- if .Values.rbe.buildbarn.enabled }}
+        - name: {{ include "rek8s.fullname" . }}-bb-frontend
+          port: 8980
+        {{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,71 @@
+{{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "calico") .Values.bes.buildbuddy.enabled }}
+# Allow ingress to BuildBuddy from external clients and ingress controller
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-ingress
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'buildbuddy'
+  order: 100
+  types:
+    - Ingress
+  ingress:
+    # gRPC port (BES + Remote Cache)
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 1985
+    # HTTP port (Web UI)
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 8080
+    # Prometheus metrics
+    - action: Allow
+      protocol: TCP
+      source:
+        namespaceSelector: kubernetes.io/metadata.name == '{{ .Values.namespaces.monitoring }}'
+      destination:
+        ports:
+          - 9090
+---
+# Allow BuildBuddy egress to database and storage
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bes-egress
+  namespace: {{ .Values.namespaces.bes }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'buildbuddy'
+  order: 100
+  types:
+    - Egress
+  egress:
+    # DNS
+    - action: Allow
+      protocol: UDP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    # MySQL (if internal)
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component == 'mysql'
+        ports:
+          - 3306
+{{- end }}

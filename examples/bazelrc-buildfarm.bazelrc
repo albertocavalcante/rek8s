@@ -1,0 +1,23 @@
+# .bazelrc configuration for rek8s with Buildfarm as RBE backend
+#
+# Usage: copy these flags to your project's .bazelrc or use --config=rek8s
+
+# Remote cache only (no execution)
+build:rek8s-cache --remote_cache=grpcs://rbe.build.example.com:443
+build:rek8s-cache --bes_backend=grpcs://bes-grpc.build.example.com:443
+build:rek8s-cache --bes_results_url=https://bes.build.example.com/invocation/
+
+# Remote execution (includes cache)
+build:rek8s --remote_executor=grpcs://rbe.build.example.com:443
+build:rek8s --bes_backend=grpcs://bes-grpc.build.example.com:443
+build:rek8s --bes_results_url=https://bes.build.example.com/invocation/
+
+# Common remote settings
+build:rek8s --jobs=50
+build:rek8s --remote_timeout=3600
+build:rek8s --remote_download_minimal
+build:rek8s --spawn_strategy=remote,local
+
+# Platform configuration (adjust to match your worker capabilities)
+build:rek8s --extra_execution_platforms=//platforms:linux_x86_64
+build:rek8s --host_platform=//platforms:linux_x86_64

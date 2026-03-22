@@ -1,0 +1,19 @@
+# Helm
+charts/rek8s/charts/*/charts/
+*.tgz
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (never commit)
+*.key
+*.pem
+secrets/

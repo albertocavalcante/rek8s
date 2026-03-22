@@ -1,0 +1,216 @@
+{{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "calico") .Values.rbe.buildbarn.enabled }}
+# Buildbarn frontend ingress
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-frontend-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'bb-frontend'
+  order: 100
+  types:
+    - Ingress
+  ingress:
+    # gRPC from external clients (via ingress)
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 8980
+    # Prometheus metrics
+    - action: Allow
+      protocol: TCP
+      source:
+        namespaceSelector: kubernetes.io/metadata.name == '{{ .Values.namespaces.monitoring }}'
+      destination:
+        ports:
+          - 9980
+---
+# Buildbarn frontend egress
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-frontend-egress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'bb-frontend'
+  order: 100
+  types:
+    - Egress
+  egress:
+    # DNS
+    - action: Allow
+      protocol: UDP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    # Storage shards
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component == 'bb-storage'
+        ports:
+          - 8981
+    # Scheduler
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component == 'bb-scheduler'
+        ports:
+          - 8982
+---
+# Buildbarn storage shard ingress
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-storage-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'bb-storage'
+  order: 100
+  types:
+    - Ingress
+  ingress:
+    # From frontend
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: app.kubernetes.io/component == 'bb-frontend'
+      destination:
+        ports:
+          - 8981
+    # From workers (input fetch, output upload)
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: app.kubernetes.io/component == 'bb-worker'
+      destination:
+        ports:
+          - 8981
+    # Prometheus metrics
+    - action: Allow
+      protocol: TCP
+      source:
+        namespaceSelector: kubernetes.io/metadata.name == '{{ .Values.namespaces.monitoring }}'
+      destination:
+        ports:
+          - 9980
+---
+# Buildbarn scheduler ingress
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-scheduler-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'bb-scheduler'
+  order: 100
+  types:
+    - Ingress
+  ingress:
+    # From frontend (client execution requests)
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: app.kubernetes.io/component == 'bb-frontend'
+      destination:
+        ports:
+          - 8982
+    # From workers (action polling)
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: app.kubernetes.io/component == 'bb-worker'
+      destination:
+        ports:
+          - 8983
+    # Prometheus metrics / web dashboard
+    - action: Allow
+      protocol: TCP
+      source:
+        namespaceSelector: kubernetes.io/metadata.name == '{{ .Values.namespaces.monitoring }}'
+      destination:
+        ports:
+          - 7982
+          - 9980
+---
+# Buildbarn worker egress
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-worker-egress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'bb-worker'
+  order: 100
+  types:
+    - Egress
+  egress:
+    # DNS
+    - action: Allow
+      protocol: UDP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: k8s-app == 'kube-dns'
+        ports:
+          - 53
+    # Scheduler (action polling)
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component == 'bb-scheduler'
+        ports:
+          - 8983
+    # Storage shards (input fetch, output upload)
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app.kubernetes.io/component == 'bb-storage'
+        ports:
+          - 8981
+---
+# Buildbarn browser ingress (optional)
+{{- if .Values.rbe.buildbarn.browser.enabled }}
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-bb-browser-ingress
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'bb-browser'
+  order: 100
+  types:
+    - Ingress
+  ingress:
+    # HTTP from ingress controller
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 7984
+{{- end }}
+{{- end }}

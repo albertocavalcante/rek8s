@@ -1,0 +1,96 @@
+# Buildbarn subchart values
+# These are defaults; overridden by the parent chart's rbe.buildbarn.* values.
+
+frontend:
+  replicaCount: 3
+  image:
+    repository: ghcr.io/buildbarn/bb-storage
+    tag: "20250827T121715Z-fbb7c11"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8980
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+storage:
+  shards: 2
+  image:
+    repository: ghcr.io/buildbarn/bb-storage
+    tag: "20250827T121715Z-fbb7c11"
+    pullPolicy: IfNotPresent
+  service:
+    port: 8981
+  casSize: 33Gi
+  acSize: 1Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+scheduler:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/buildbarn/bb-scheduler
+    tag: "20250820T081613Z-efef252"
+    pullPolicy: IfNotPresent
+  service:
+    clientPort: 8982
+    workerPort: 8983
+    httpPort: 7982
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+worker:
+  replicaCount: 8
+  image:
+    repository: ghcr.io/buildbarn/bb-worker
+    tag: "20250820T081613Z-efef252"
+    pullPolicy: IfNotPresent
+  runnerImage: "ghcr.io/catthehacker/ubuntu:act-22.04"
+  runnerInstallerImage:
+    repository: ghcr.io/buildbarn/bb-runner-installer
+    tag: "20250820T081613Z-efef252"
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
+browser:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ghcr.io/buildbarn/bb-browser
+    tag: "20250820T143915Z-823deb2"
+    pullPolicy: IfNotPresent
+  service:
+    port: 7984
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+metricsPort: 9980
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

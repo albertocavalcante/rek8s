@@ -1,0 +1,13 @@
+apiVersion: v2
+name: buildbarn
+description: >-
+  Buildbarn subchart for rek8s. Deploys the Buildbarn RBE stack:
+  bb-storage (frontend + shards), bb-scheduler, bb-worker + bb-runner,
+  and optionally bb-browser.
+type: application
+version: 0.0.1
+appVersion: "20250827"
+
+# No upstream Helm chart exists for Buildbarn. This chart is derived from
+# the official Kustomize manifests at:
+#   https://github.com/buildbarn/bb-deployments/tree/master/kubernetes

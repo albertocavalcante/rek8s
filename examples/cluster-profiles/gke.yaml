@@ -1,0 +1,82 @@
+# rek8s cluster profile: Google Kubernetes Engine (GKE)
+#
+# For GKE clusters using:
+#   - GKE Dataplane V2 (Cilium-based, supports standard NetworkPolicy)
+#   - Gateway API with GKE Gateway Controller
+#   - cert-manager for TLS
+#   - Cloud Monitoring + Prometheus
+#
+# Prerequisites:
+#   - GKE cluster with Gateway API enabled
+#   - cert-manager installed
+#   - GCS bucket created for BuildBuddy storage
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/gke.yaml \
+#     --set global.domain=build.mycompany.com \
+#     --set cluster.ingress.gatewayRef.name=gke-gateway \
+#     --set cluster.ingress.gatewayRef.namespace=infra
+
+global:
+  domain: "build.example.com"
+  storageClass: "premium-rwo"  # SSD-backed on GKE
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: gcs
+      # gcs:
+      #   bucket: rek8s-buildbuddy-artifacts
+      #   project: my-gcp-project
+    database:
+      type: mysql
+      # mysql:
+      #   host: 10.0.0.5  # Cloud SQL private IP
+      #   port: 3306
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-cloudsql-credentials
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes  # GKE Dataplane V2 supports standard netpol
+
+  ingress:
+    enabled: true
+    provider: gateway-api
+    gatewayRef:
+      name: gke-gateway
+      namespace: infra
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: true
+    additionalLabels:
+      release: kube-prometheus-stack

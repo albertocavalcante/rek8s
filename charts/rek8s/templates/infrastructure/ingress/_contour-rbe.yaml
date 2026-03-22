@@ -1,0 +1,41 @@
+{{- if and .Values.cluster.ingress.enabled (eq .Values.cluster.ingress.provider "contour") }}
+{{- if or .Values.rbe.buildfarm.enabled .Values.rbe.buildbarn.enabled }}
+# Contour HTTPProxy for RBE -- gRPC (Remote Execution + CAS + AC)
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-rbe-grpc
+  namespace: {{ .Values.namespaces.rbe }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  {{- with .Values.cluster.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "rek8s.rbe.hostname" . }}
+    {{- if .Values.global.tls.enabled }}
+    tls:
+      secretName: {{ include "rek8s.fullname" . }}-rbe-tls
+      minimumProtocolVersion: "1.2"
+    {{- end }}
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        {{- if .Values.rbe.buildfarm.enabled }}
+        - name: {{ include "rek8s.fullname" . }}-buildfarm-server
+          port: 8980
+          protocol: h2c
+        {{- end }}
+        {{- if .Values.rbe.buildbarn.enabled }}
+        - name: {{ include "rek8s.fullname" . }}-bb-frontend
+          port: 8980
+          protocol: h2c
+        {{- end }}
+      timeoutPolicy:
+        response: 1h
+        idle: 600s
+{{- end }}
+{{- end }}
