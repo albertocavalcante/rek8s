@@ -95,6 +95,11 @@ Platforms:
 - vSphere-backed clusters
 - Proxmox-backed clusters
 
+Directly supported now:
+
+- `k3s-traefik-gateway.yaml`
+- `rke2-traefik-gateway.yaml`
+
 Why separate:
 
 - These are distribution environments rather than cloud products.
@@ -104,10 +109,18 @@ Why separate:
 Recommended support model:
 
 - document them as “distribution profiles”
+- prefer Gateway API when the distribution already ships Traefik
 - keep the values files simple and focused on ingress/CNI/storage assumptions
 
 ## Sources
 
+- K3s packaged components: <https://docs.k3s.io/installation/packaged-components>
+- K3s networking services: <https://docs.k3s.io/networking/networking-services>
+- K3s Helm customization: <https://docs.k3s.io/add-ons/helm>
+- RKE2 networking services: <https://docs.rke2.io/networking/networking_services>
+- RKE2 basic network options: <https://docs.rke2.io/networking/basic_network_options>
+- RKE2 Helm customization: <https://docs.rke2.io/add-ons/helm>
+- Traefik Gateway API provider: <https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-gateway/>
 - IBM Cloud VPC load balancers: <https://cloud.ibm.com/docs/containers?topic=containers-vpclb-about>
 - IBM Cloud Kubernetes network policies: <https://cloud.ibm.com/docs/containers?topic=containers-network_policies>
 - IBM Cloud block storage for VPC: <https://cloud.ibm.com/docs/containers?topic=containers-storage-block-vpc-sc-ref>

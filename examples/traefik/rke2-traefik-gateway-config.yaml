@@ -1,0 +1,12 @@
+# Apply this on RKE2 servers through:
+#   /var/lib/rancher/rke2/server/manifests/rke2-traefik-config.yaml
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    providers:
+      kubernetesGateway:
+        enabled: true

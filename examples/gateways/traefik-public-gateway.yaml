@@ -9,18 +9,23 @@ metadata:
   name: rek8s-public
   namespace: rek8s-ingress
 spec:
-  gatewayClassName: gke-l7-global-external-managed
+  gatewayClassName: traefik
   listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
     - name: https
       protocol: HTTPS
       port: 443
       tls:
         mode: Terminate
         certificateRefs:
-          # Create this Secret in the Gateway namespace, or replace this
-          # pattern with the GKE Certificate Manager certmap annotation.
+          # The Secret must exist in the same namespace as the Gateway.
           - kind: Secret
-            name: placeholder-gke-gateway-cert
+            name: placeholder-traefik-gateway-cert
       allowedRoutes:
         namespaces:
           from: All

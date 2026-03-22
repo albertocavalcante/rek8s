@@ -171,6 +171,8 @@ Use them as-is or as a starting point for your own configuration.
 | [`scaleway-kapsule`](examples/cluster-profiles/scaleway-kapsule.yaml) | Kapsule / Cilium or Calico | ingress-nginx | Standard k8s | cert-manager | Scaleway Kubernetes Kapsule |
 | [`ibm-cloud-vpc`](examples/cluster-profiles/ibm-cloud-vpc.yaml) | IBM Cloud VPC / Calico | ingress-nginx | Standard k8s | cert-manager | IBM Cloud Kubernetes Service |
 | [`alibaba-ack`](examples/cluster-profiles/alibaba-ack.yaml) | ACK / Terway | ACK-managed nginx | Standard k8s | cert-manager | Alibaba Cloud ACK |
+| [`k3s-traefik-gateway`](examples/cluster-profiles/k3s-traefik-gateway.yaml) | K3s / Flannel + kube-router | Gateway API / Traefik | Standard k8s | cert-manager | K3s edge or homelab |
+| [`rke2-traefik-gateway`](examples/cluster-profiles/rke2-traefik-gateway.yaml) | RKE2 / Canal | Gateway API / Traefik | Standard k8s | cert-manager | RKE2 self-managed clusters |
 | [`vanilla`](examples/cluster-profiles/vanilla.yaml) | Any | None (NodePort) | Disabled | Disabled | Dev / CI |
 
 ```bash
@@ -186,6 +188,8 @@ helm install rek8s ./charts/rek8s \
 
 For platform-specific deployment guidance and cloud gotchas, see
 [`docs/major-platform-deployments.md`](docs/major-platform-deployments.md).
+For self-managed distribution examples, see
+[`docs/distribution-profiles.md`](docs/distribution-profiles.md).
 For the next expansion wave and platform prioritization, see
 [`docs/next-platform-roadmap.md`](docs/next-platform-roadmap.md).
 For platforms that need a different support model, see
@@ -406,6 +410,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Architecture](docs/architecture.md) | System overview, data flow, port allocation, HA strategy |
 | [Design Decisions](docs/design-decisions.md) | 12 architectural decision records with rationale |
 | [Cluster Requirements](docs/cluster-requirements.md) | CRD prerequisites, cluster profiles, resource sizing |
+| [Distribution Profiles](docs/distribution-profiles.md) | K3s and RKE2 deployment patterns via Traefik Gateway API |
 | [Component Matrix](docs/component-matrix.md) | Buildfarm vs Buildbarn comparison, BES feature matrix |
 | [Client Tooling](docs/client-tooling.md) | Operator/debug tooling such as bf-client, reclient, bb-clientd, and CAS utilities |
 | [REAPI Ecosystem](docs/reapi-ecosystem.md) | Known REAPI servers and clients beyond the providers charted today |

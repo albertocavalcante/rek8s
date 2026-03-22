@@ -25,3 +25,6 @@ spec:
           # The Secret must exist in the same namespace as the Gateway.
           - kind: Secret
             name: placeholder-doks-gateway-cert
+      allowedRoutes:
+        namespaces:
+          from: All

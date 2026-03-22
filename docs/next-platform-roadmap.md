@@ -131,14 +131,50 @@ Recommended approach:
 These are likely valuable, but they are distribution support rather than cloud
 support:
 
-- RKE2
-- k3s
+### k3s
+
+Status: added in [`k3s-traefik-gateway.yaml`](../examples/cluster-profiles/k3s-traefik-gateway.yaml)
+
+Why it graduated:
+
+- K3s ships packaged Traefik, ServiceLB, local storage, and a built-in
+  network-policy controller.
+- K3s 1.32+ moved packaged Traefik to v3, which makes the Gateway API path a
+  cleaner fit than forcing `ingress-nginx`.
+
+Main gotchas:
+
+- The default `local-path` storage is node-local, so HA state still needs a
+  stronger storage backend.
+- ServiceLB consumes ports 80 and 443 on participating nodes.
+
+### RKE2
+
+Status: added in [`rke2-traefik-gateway.yaml`](../examples/cluster-profiles/rke2-traefik-gateway.yaml)
+
+Why it graduated:
+
+- RKE2 documents Traefik support directly and exposes packaged Traefik through
+  `HelmChartConfig`.
+- As of March 22, 2026, RKE2 documents `ingress-nginx` as end-of-life in March
+  2026 and says new v1.36 clusters default to Traefik.
+
+Main gotchas:
+
+- Storage remains environment-specific, so the profile intentionally uses the
+  cluster default StorageClass.
+- Standard Kubernetes `NetworkPolicy` depends on using Canal, Calico, or
+  Cilium instead of Flannel.
+
+Remaining distribution candidates:
+
 - Talos Linux
 - Cluster API-based installs
 - vSphere-backed clusters
 - Proxmox-backed clusters
 
-These should eventually become a dedicated “distribution profiles” section.
+These should eventually expand beyond the first Traefik-based distribution
+profiles into a broader “distribution profiles” section.
 
 ## Sources
 
@@ -157,3 +193,11 @@ These should eventually become a dedicated “distribution profiles” section.
 - IBM Cloud Kubernetes load balancers: <https://cloud.ibm.com/docs/containers?topic=containers-vpclb-about>
 - IBM Cloud Kubernetes network policies: <https://cloud.ibm.com/docs/containers?topic=containers-network_policies>
 - IBM Cloud Kubernetes block storage: <https://cloud.ibm.com/docs/containers?topic=containers-block_storage>
+- K3s packaged components: <https://docs.k3s.io/installation/packaged-components>
+- K3s networking services: <https://docs.k3s.io/networking/networking-services>
+- K3s Helm customization: <https://docs.k3s.io/add-ons/helm>
+- K3s release notes: <https://docs.k3s.io/release-notes/v1.34.X>
+- RKE2 networking services: <https://docs.rke2.io/networking/networking_services>
+- RKE2 basic network options: <https://docs.rke2.io/networking/basic_network_options>
+- RKE2 Helm customization: <https://docs.rke2.io/add-ons/helm>
+- Traefik Gateway API provider: <https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-gateway/>

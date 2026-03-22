@@ -1,0 +1,76 @@
+# rek8s cluster profile: K3s + Traefik Gateway API
+#
+# For K3s clusters using:
+#   - packaged Traefik v3 with Gateway API enabled
+#   - the built-in network-policy controller
+#   - the built-in local-path provisioner, or a replacement CSI
+#
+# Prerequisites:
+#   - K3s 1.32+ so packaged Traefik is v3
+#   - Gateway API enabled in packaged Traefik using
+#     examples/traefik/k3s-traefik-gateway-config.yaml
+#   - Gateway API CRDs installed
+#   - Gateway named rek8s-public created from
+#     examples/gateways/traefik-public-gateway.yaml
+#   - cert-manager installed if TLS is enabled
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/k3s-traefik-gateway.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "local-path"
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 1
+    storage:
+      type: disk
+      disk:
+        size: 20Gi
+    database:
+      type: sqlite
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 1
+    worker:
+      replicaCount: 2
+      storage:
+        size: 40Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: gateway-api
+    gatewayRef:
+      name: rek8s-public
+      namespace: rek8s-ingress
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

@@ -61,7 +61,7 @@ helm install contour bitnami/contour --namespace projectcontour --create-namespa
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
 ```
 
-A Gateway API implementation (Contour, Envoy Gateway, Istio, Cilium) must
+A Gateway API implementation (Contour, Envoy Gateway, Istio, Cilium, Traefik) must
 also be installed.
 
 ### When `cluster.networkPolicy.provider: calico`
@@ -292,6 +292,42 @@ Notes:
 - NetworkPolicy support in ACK depends on creating the cluster with Terway and
   enabling the feature.
 - Flannel clusters do not support NetworkPolicy.
+
+### `k3s-traefik-gateway` (K3s with Traefik Gateway API)
+
+```
+CNI:              Flannel + kube-router network-policy controller
+Ingress:          Gateway API (Traefik)
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          local-path
+Monitoring:       Prometheus Operator (optional)
+```
+
+Notes:
+- This profile is intended for K3s 1.32+ so packaged Traefik is v3.
+- ServiceLB uses all nodes for the Traefik `LoadBalancer` Service by default,
+  so ports 80 and 443 become unavailable for other HostPort or NodePort use.
+- If you swap Flannel for another CNI, K3s documents that the built-in
+  network-policy controller should also be disabled.
+
+### `rke2-traefik-gateway` (RKE2 with Traefik Gateway API)
+
+```
+CNI:              Canal by default
+Ingress:          Gateway API (Traefik)
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          Cluster default StorageClass
+Monitoring:       Prometheus Operator (optional)
+```
+
+Notes:
+- This profile assumes Canal, Calico, or Cilium. RKE2 documents that Flannel
+  does not support network policies.
+- RKE2 documents `ingress-nginx` end-of-life in March 2026 and says Traefik is
+  the default for new v1.36 clusters.
+- ServiceLB is optional on RKE2 and must be enabled explicitly when desired.
 
 ### `docker-desktop` (Local Docker Desktop)
 
