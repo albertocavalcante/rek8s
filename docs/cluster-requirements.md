@@ -277,6 +277,22 @@ Storage:          ibmc-vpc-block-10iops-tier
 Monitoring:       IBM Cloud Monitoring or Prometheus Operator
 ```
 
+### `alibaba-ack` (Alibaba Cloud ACK)
+
+```
+CNI:              Terway
+Ingress:          ACK-managed NGINX Ingress Controller
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          alicloud-disk-topology-alltype
+Monitoring:       Managed Prometheus or Prometheus Operator
+```
+
+Notes:
+- NetworkPolicy support in ACK depends on creating the cluster with Terway and
+  enabling the feature.
+- Flannel clusters do not support NetworkPolicy.
+
 ### `docker-desktop` (Local Docker Desktop)
 
 ```

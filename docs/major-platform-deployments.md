@@ -15,6 +15,7 @@ the major Kubernetes targets we care about now:
 - Akamai Cloud / Linode Kubernetes Engine (LKE)
 - Scaleway Kubernetes Kapsule
 - IBM Cloud Kubernetes Service
+- Alibaba Cloud ACK
 
 These examples assume the same baseline stack unless stated otherwise:
 
@@ -44,6 +45,7 @@ first "real" ingress-backed baseline, start with
 | Linode LKE | [`linode-lke.yaml`](../examples/cluster-profiles/linode-lke.yaml) | nginx ingress | `linode-block-storage` | standard k8s | NodeBalancers back `LoadBalancer` services |
 | Scaleway Kapsule | [`scaleway-kapsule.yaml`](../examples/cluster-profiles/scaleway-kapsule.yaml) | nginx ingress | cluster default | standard k8s | Default Block Volume StorageClass, cilium/calico supported |
 | IBM Cloud KS | [`ibm-cloud-vpc.yaml`](../examples/cluster-profiles/ibm-cloud-vpc.yaml) | nginx ingress | `ibmc-vpc-block-10iops-tier` | standard k8s | VPC ALB/NLB options behind `LoadBalancer` services |
+| Alibaba ACK | [`alibaba-ack.yaml`](../examples/cluster-profiles/alibaba-ack.yaml) | ACK-managed nginx | `alicloud-disk-topology-alltype` | standard k8s | Terway required for NetworkPolicy support |
 
 ## Shared Guidance
 
@@ -363,6 +365,37 @@ Gotchas:
 - IBM limits one VPC load balancer per `LoadBalancer` service and caps the total
   number of VPC load balancers across VPC clusters in the VPC.
 
+## Alibaba Cloud ACK
+
+Example file:
+
+- [`examples/cluster-profiles/alibaba-ack.yaml`](../examples/cluster-profiles/alibaba-ack.yaml)
+
+Install:
+
+```bash
+helm install rek8s ./charts/rek8s \
+  -f examples/cluster-profiles/alibaba-ack.yaml \
+  --set global.domain=build.example.com
+```
+
+Gotchas:
+
+- This profile intentionally targets the ACK-managed NGINX Ingress Controller
+  path, not ALB Ingress or APIG Ingress.
+- ACK reserves the `nginx` IngressClass name for the default controller
+  installed through component management. If you deploy additional controllers,
+  use a different class and update `cluster.ingress.className`.
+- Since August 28, 2025, ACK defaults new SLB-type Services and console-managed
+  NGINX Ingress installs to NLB instead of CLB when the component versions meet
+  Alibaba's stated thresholds.
+- ACK does not provide a default StorageClass by design. The profile sets
+  `alicloud-disk-topology-alltype` explicitly because Alibaba recommends it for
+  topology-aware provisioning with `WaitForFirstConsumer`.
+- NetworkPolicy support requires Terway. Flannel clusters do not support it, and
+  ACK documents only standard Kubernetes `NetworkPolicy`, not Calico/Cilium
+  policy CRDs.
+
 ## Sources
 
 These profiles and gotchas were aligned against current primary sources on
@@ -403,6 +436,15 @@ March 22, 2026.
 - IBM Cloud VPC load balancers: <https://cloud.ibm.com/docs/containers?topic=containers-vpclb-about>
 - IBM Cloud Kubernetes network policies: <https://cloud.ibm.com/docs/containers?topic=containers-network_policies>
 - IBM Cloud block storage for VPC: <https://cloud.ibm.com/docs/containers?topic=containers-storage-block-vpc-sc-ref>
+- Alibaba ACK before you start: <https://www.alibabacloud.com/help/en/ack/product-overview/before-you-start>
+- Alibaba ACK NGINX ingress management: <https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/manage-the-nginx-ingress-controller>
+- Alibaba ACK multiple ingress controllers: <https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/deploy-multiple-ingress-controllers-in-a-cluster>
+- Alibaba ACK service FAQ: <https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/service-faq>
+- Alibaba ACK disk StorageClasses: <https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/storage-class>
+- Alibaba ACK storage basics: <https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/storage-basics>
+- Alibaba ACK network policies: <https://www.alibabacloud.com/help/en/ack/ack-managed-and-ack-dedicated/user-guide/use-network-policies>
+- Alibaba ACK Terway: <https://www.alibabacloud.com/help/en/ack/product-overview/terway>
+- Alibaba ACK NLB default notice: <https://www.alibabacloud.com/en/notice/ack_load_balancer_type_and_billing_method_change_for_new_services_and_nginx_ingress_controller_53b?_p_lc=1>
 - Oracle OKE ingress controllers: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengmanagingresscontrollers.htm>
 - Oracle OKE nginx ingress example: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengsettingupingresscontroller.htm>
 - Oracle OKE block volume PVCs: <https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcreatingpersistentvolumeclaim_topic-Provisioning_PVCs_on_BV.htm>

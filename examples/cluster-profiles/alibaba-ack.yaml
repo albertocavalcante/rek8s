@@ -1,0 +1,81 @@
+# rek8s cluster profile: Alibaba Cloud ACK
+#
+# This profile targets the ACK-managed NGINX Ingress path rather than
+# Alibaba-specific ALB/APIG ingress products.
+#
+# For ACK clusters using:
+#   - Terway as the network plug-in
+#   - ACK-managed NGINX Ingress Controller
+#   - CSI-backed cloud disks
+#
+# Prerequisites:
+#   - ACK managed or dedicated cluster created with Terway
+#   - NetworkPolicy enabled if cluster.networkPolicy.enabled remains true
+#   - ACK NGINX Ingress Controller installed from the ACK console or Add-ons page
+#   - default ACK controller using the reserved IngressClass name nginx
+#   - CSI storage plug-ins installed in the cluster
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/alibaba-ack.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: "alicloud-disk-topology-alltype"
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: disk
+      disk:
+        size: 50Gi
+    database:
+      type: mysql
+      # mysql:
+      #   host: mysql.internal.example
+      #   port: 3306
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-mysql
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: nginx
+    className: nginx
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

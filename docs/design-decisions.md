@@ -94,6 +94,7 @@ Kubernetes cluster configurations.
   - `linode-lke.yaml` -- Akamai / Linode LKE with nginx ingress + block storage
   - `scaleway-kapsule.yaml` -- Scaleway Kapsule with nginx ingress
   - `ibm-cloud-vpc.yaml` -- IBM Cloud Kubernetes Service VPC clusters
+  - `alibaba-ack.yaml` -- Alibaba ACK with Terway + managed NGINX ingress
   - `vanilla-nginx.yaml` -- generic Kubernetes + ingress-nginx
   - `vanilla.yaml` -- minimal local / CI footprint without ingress
 

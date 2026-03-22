@@ -20,6 +20,7 @@ These platforms map well to the current chart:
 - Akamai / Linode LKE
 - Scaleway Kapsule
 - IBM Cloud Kubernetes Service (VPC)
+- Alibaba ACK via the managed NGINX path
 
 Common characteristics:
 
@@ -52,28 +53,36 @@ Recommended support model:
 3. Validate subcharts against restricted SCC expectations before publishing
    OpenShift profiles.
 
-## Alibaba ACK Track
+## Alibaba ACK Advanced Ingress Track
 
 Platform:
 
 - Alibaba Cloud ACK
 
-Why this is a separate track for now:
+What is directly supported now:
 
-- ACK supports both self-managed `nginx-ingress` and managed ALB Ingresses.
+- standard Kubernetes `Ingress` routed by the ACK-managed NGINX Ingress
+  Controller
+- Terway-backed standard Kubernetes `NetworkPolicy`
+- CSI-backed disk volumes through explicit ACK StorageClasses
+
+Why this remains a separate advanced track:
+
+- ACK supports both managed NGINX and Alibaba-specific ALB/APIG ingress paths.
 - Load-balancer defaults changed in 2025 toward NLB for new services and new
   NGINX ingress-controller installs.
 - ACK has several storage and ingress combinations that deserve an intentional
-  first opinion rather than a generic nginx clone.
+  opinion instead of collapsing everything into one profile.
 
 Recommended support model:
 
-1. Decide whether the first ACK path should be:
-   - `nginx-ingress` on managed NLB
+1. Keep the current ACK profile focused on managed NGINX.
+2. Treat these as separate advanced ACK tracks:
    - ALB Ingress
-   - Gateway-style cloud-native path later
-2. Write one ACK-specific deployment guide before adding a profile.
-3. Treat ACK One and multi-cluster ALB use cases as a separate advanced topic.
+   - APIG / Higress
+   - ACK One multi-cluster ingress
+3. Only add direct chart integration when `rek8s` can model the provider API
+   cleanly instead of hiding it behind generic annotations.
 
 ## Distribution Track
 

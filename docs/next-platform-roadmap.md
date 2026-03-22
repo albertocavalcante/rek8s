@@ -89,18 +89,21 @@ Why it graduated:
 
 ### Alibaba Cloud ACK
 
-Why next:
+Status: added in [`alibaba-ack.yaml`](../examples/cluster-profiles/alibaba-ack.yaml)
 
-- ACK is mature and widely used.
-- Alibaba exposes strong managed integrations for SLB, NAS, OSS, and disks.
+Why it graduated:
 
-Why not immediate:
+- ACK documents a clean managed NGINX Ingress path for standard Kubernetes
+  Ingress resources.
+- ACK documents a recommended topology-aware disk StorageClass:
+  `alicloud-disk-topology-alltype`.
+- ACK documents Terway-based support for standard Kubernetes `NetworkPolicy`.
 
-- Identity, storage, and ingress integrations are more provider-specific than
-  the current simple nginx-based pattern.
-- Alibaba changed default load-balancer behavior for new Services and NGINX
-  ingress installs toward NLB in 2025, so the first profile should be a
-  deliberate ACK opinion, not a generic copy.
+Remaining advanced track:
+
+- ALB Ingress
+- APIG / Higress
+- ACK One multi-cluster ingress
 
 ## Separate Track: OpenShift
 
