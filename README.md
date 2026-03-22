@@ -170,6 +170,7 @@ Use them as-is or as a starting point for your own configuration.
 | [`linode-lke`](examples/cluster-profiles/linode-lke.yaml) | LKE / Calico | ingress-nginx | Standard k8s | cert-manager | Akamai Cloud / Linode Kubernetes Engine |
 | [`scaleway-kapsule`](examples/cluster-profiles/scaleway-kapsule.yaml) | Kapsule / Cilium or Calico | ingress-nginx | Standard k8s | cert-manager | Scaleway Kubernetes Kapsule |
 | [`ibm-cloud-vpc`](examples/cluster-profiles/ibm-cloud-vpc.yaml) | IBM Cloud VPC / Calico | ingress-nginx | Standard k8s | cert-manager | IBM Cloud Kubernetes Service |
+| [`alibaba-ack`](examples/cluster-profiles/alibaba-ack.yaml) | ACK / Terway | ACK-managed nginx | Standard k8s | cert-manager | Alibaba Cloud ACK |
 | [`vanilla`](examples/cluster-profiles/vanilla.yaml) | Any | None (NodePort) | Disabled | Disabled | Dev / CI |
 
 ```bash
@@ -406,6 +407,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Design Decisions](docs/design-decisions.md) | 12 architectural decision records with rationale |
 | [Cluster Requirements](docs/cluster-requirements.md) | CRD prerequisites, cluster profiles, resource sizing |
 | [Component Matrix](docs/component-matrix.md) | Buildfarm vs Buildbarn comparison, BES feature matrix |
+| [Client Tooling](docs/client-tooling.md) | Operator/debug tooling such as bf-client, reclient, bb-clientd, and CAS utilities |
 | [REAPI Ecosystem](docs/reapi-ecosystem.md) | Known REAPI servers and clients beyond the providers charted today |
 
 ## Related Projects
