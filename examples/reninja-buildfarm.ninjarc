@@ -1,0 +1,19 @@
+# .ninjarc configuration for rek8s with Buildfarm as the RBE backend
+#
+# Usage:
+#   reninja --config=rek8s-cache
+#   reninja --config=rek8s-remote
+
+build:rek8s-bes --bes_backend=grpcs://bes-grpc.build.example.com:443
+build:rek8s-bes --results_url=https://bes.build.example.com/invocation
+
+build:rek8s-cache --config=rek8s-bes
+build:rek8s-cache --remote_cache=grpcs://rbe.build.example.com:443
+
+build:rek8s-remote --config=rek8s-cache
+build:rek8s-remote --remote_executor=grpcs://rbe.build.example.com:443
+build:rek8s-remote -j 200
+
+# Remote execution for Ninja/CMake projects typically also needs a consistent
+# container image that includes the toolchain used during local configuration.
+# build:rek8s-remote --container_image=ghcr.io/your-org/rbe-ubuntu22.04:ninja

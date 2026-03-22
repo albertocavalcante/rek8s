@@ -1,36 +1,20 @@
 # rek8s
 
-**Remote Execution on Kubernetes** -- an umbrella Helm chart for deploying Bazel
-remote build infrastructure with pluggable BES and RBE providers.
+**Remote Execution on Kubernetes** -- an umbrella Helm chart for deploying
+remote build infrastructure for Bazel, Buck2, Reninja, and other REAPI-capable
+clients with pluggable BES and RBE providers.
 
 ---
 
-rek8s lets you deploy a complete Bazel remote build stack on Kubernetes with a
-single `helm install`. Pick your **Build Event Service** (BuildBuddy OSS) and
-your **Remote Build Execution** backend (Buildfarm or Buildbarn), and rek8s
-handles the networking, TLS, network policies, ingress, and observability --
-adapted to your cluster's specific capabilities.
+rek8s lets you deploy a complete remote build stack on Kubernetes with a single
+`helm install`. Pick your **Build Event Service** (BuildBuddy OSS) and your
+**Remote Build Execution** backend (Buildfarm or Buildbarn), and rek8s handles
+the networking, TLS, network policies, ingress, and observability adapted to
+your cluster's specific capabilities.
 
-```
-                        ┌──────────────────────────────────────────┐
-                        │            rek8s umbrella chart           │
-                        │                                          │
-  Bazel / Buck2         │  ┌──────────┐      ┌─────────────────┐   │
-  ─────────────────────▶│  │   BES    │      │      RBE        │   │
-  --bes_backend=...     │  │          │      │                 │   │
-  --remote_executor=... │  │BuildBuddy│      │ Buildfarm       │   │
-  --remote_cache=...    │  │  OSS     │      │     OR          │   │
-                        │  │          │      │ Buildbarn       │   │
-                        │  └────┬─────┘      └───────┬─────────┘   │
-                        │       │                    │             │
-                        │  ┌────┴────────────────────┴──────────┐  │
-                        │  │       Infrastructure Layer          │  │
-                        │  │                                     │  │
-                        │  │  NetworkPolicy · Ingress · TLS      │  │
-                        │  │  Storage · RBAC · Observability     │  │
-                        │  └─────────────────────────────────────┘  │
-                        └──────────────────────────────────────────┘
-```
+![rek8s overview](docs/diagrams/overview.svg)
+
+Source: [`docs/diagrams/overview.d2`](docs/diagrams/overview.d2)
 
 ## Why rek8s?
 
@@ -132,6 +116,32 @@ See [`examples/bazelrc-buildfarm.bazelrc`](examples/bazelrc-buildfarm.bazelrc)
 and [`examples/bazelrc-buildbarn.bazelrc`](examples/bazelrc-buildbarn.bazelrc)
 for complete examples.
 
+### Connect Reninja
+
+Add to your project's `.ninjarc`:
+
+```bash
+build:rek8s-bes --bes_backend=grpcs://bes-grpc.build.mycompany.com:443
+build:rek8s-bes --results_url=https://bes.build.mycompany.com/invocation
+
+build:rek8s-cache --config=rek8s-bes
+build:rek8s-cache --remote_cache=grpcs://rbe.build.mycompany.com:443
+
+build:rek8s-remote --config=rek8s-cache
+build:rek8s-remote --remote_executor=grpcs://rbe.build.mycompany.com:443
+build:rek8s-remote -j 200
+```
+
+Then build:
+
+```bash
+reninja --config=rek8s-remote
+```
+
+See [`examples/reninja-buildfarm.ninjarc`](examples/reninja-buildfarm.ninjarc)
+and [`examples/reninja-buildbarn.ninjarc`](examples/reninja-buildbarn.ninjarc)
+for complete examples.
+
 ## Cluster Profiles
 
 rek8s ships with pre-built values files for common Kubernetes environments.
@@ -166,7 +176,7 @@ helm install rek8s ./charts/rek8s \
 <tr><td>CAS Storage</td><td>Filesystem (XFS recommended)</td><td>Block-based (self-cleaning, FS-agnostic)</td></tr>
 <tr><td>Backplane</td><td>Redis</td><td>Direct gRPC</td></tr>
 <tr><td>Worker Isolation</td><td>Single process</td><td>Privilege separation (worker/runner split)</td></tr>
-<tr><td>Build System Support</td><td>Bazel</td><td>Bazel, Buck2, Pants, BuildStream, recc</td></tr>
+<tr><td>Build System Support</td><td>Primarily Bazel</td><td>Bazel, Buck2, Reninja, Pants, BuildStream, recc</td></tr>
 <tr><td>CAS Browser UI</td><td>No</td><td>Yes (bb-browser)</td></tr>
 <tr><td>Complexity</td><td>Lower</td><td>Higher (more control)</td></tr>
 </table>
@@ -238,38 +248,9 @@ reference with all options documented.
 
 ### Data Flow
 
-```
-  ┌──────────┐
-  │  Bazel   │
-  │  client  │
-  └────┬─────┘
-       │
-       │ gRPC
-       │
-       ├──── --bes_backend ────────────▶ ┌─────────────────┐
-       │                                 │  BuildBuddy OSS │
-       │                                 │  :1985 gRPC     │
-       │                                 │  :8080 HTTP     │
-       │                                 └─────────────────┘
-       │
-       └──── --remote_executor ────────▶ ┌──────────────────────────────┐
-                                         │     RBE Backend (pick one)   │
-                                         │                              │
-                                         │  Buildfarm                   │
-                                         │    Server (:8980)            │
-                                         │    Workers (:8982)           │
-                                         │    Redis (backplane)         │
-                                         │                              │
-                                         │          OR                  │
-                                         │                              │
-                                         │  Buildbarn                   │
-                                         │    Frontend (:8980)          │
-                                         │    Storage shards (:8981)    │
-                                         │    Scheduler (:8982/:8983)   │
-                                         │    Workers + Runners         │
-                                         │    Browser (:7984)           │
-                                         └──────────────────────────────┘
-```
+![rek8s data flow](docs/diagrams/data-flow.svg)
+
+Source: [`docs/diagrams/data-flow.d2`](docs/diagrams/data-flow.d2)
 
 ### Namespace Layout
 
@@ -324,7 +305,11 @@ rek8s/
 │   ├── architecture.md              # System architecture and data flow
 │   ├── design-decisions.md          # 12 ADRs with rationale
 │   ├── cluster-requirements.md      # CRD prerequisites and resource sizing
-│   └── component-matrix.md          # Buildfarm vs Buildbarn comparison
+│   ├── component-matrix.md          # Buildfarm vs Buildbarn comparison
+│   └── diagrams/                    # D2 sources + generated SVG diagrams
+├── scripts/
+│   └── render-diagrams.sh           # D2 -> SVG renderer used by `just diagrams`
+├── justfile                         # Convenience targets for docs diagrams
 └── examples/
     ├── cluster-profiles/            # Pre-built values for common clusters
     │   ├── calico-contour.yaml
@@ -332,7 +317,9 @@ rek8s/
     │   ├── gke.yaml
     │   └── vanilla.yaml
     ├── bazelrc-buildfarm.bazelrc    # .bazelrc for Buildfarm backend
-    └── bazelrc-buildbarn.bazelrc    # .bazelrc for Buildbarn backend
+    ├── bazelrc-buildbarn.bazelrc    # .bazelrc for Buildbarn backend
+    ├── reninja-buildfarm.ninjarc    # .ninjarc for Buildfarm backend
+    └── reninja-buildbarn.ninjarc    # .ninjarc for Buildbarn backend
 ```
 
 ## CRD Requirements
@@ -383,6 +370,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 - nginx Ingress templates
 - Grafana dashboard ConfigMaps
 - CI pipeline (chart linting, kubeval, integration tests)
+- Diagram pipeline (`just diagrams`) for D2 -> SVG docs assets
 - Publish to a Helm repository
 
 ## Documentation
@@ -401,6 +389,8 @@ scaffolding, infrastructure templates, and design documents are in place.
 - [buildbarn](https://github.com/buildbarn) -- Modular Go-based RBE
 - [buildbuddy](https://github.com/buildbuddy-io/buildbuddy) -- BES + Remote
   Cache (OSS) and RBE (Enterprise)
+- [reninja](https://github.com/buildbuddy-io/reninja) -- Ninja-compatible
+  REAPI client with BES, remote cache, and remote execution support
 - [Remote Execution API](https://github.com/bazelbuild/remote-apis) --
   The protocol all RBE backends implement
 

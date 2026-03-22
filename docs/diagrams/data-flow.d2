@@ -1,0 +1,79 @@
+direction: down
+
+clients: {
+  label: "Bazel / Buck2 / Reninja clients"
+  style: {
+    fill: "#E2E8F0"
+    stroke: "#334155"
+  }
+}
+
+bes: {
+  label: "BuildBuddy OSS\n1985 gRPC · 8080 HTTP"
+  style: {
+    fill: "#DBEAFE"
+    stroke: "#1D4ED8"
+  }
+}
+
+rbe: {
+  label: "RBE backend (pick one)"
+  direction: right
+  style: {
+    fill: "#F8FAFC"
+    stroke: "#0F172A"
+    stroke-width: 2
+  }
+
+  buildfarm: {
+    label: "Buildfarm"
+    direction: down
+    style: {
+      fill: "#ECFCCB"
+      stroke: "#4D7C0F"
+    }
+
+    server: "Server\n:8980"
+    workers: "Workers\n:8982"
+    redis: "Redis\nbackplane"
+  }
+
+  buildbarn: {
+    label: "Buildbarn"
+    direction: down
+    style: {
+      fill: "#FCE7F3"
+      stroke: "#BE185D"
+    }
+
+    frontend: "Frontend\n:8980"
+    storage: "Storage shards\n:8981"
+    scheduler: "Scheduler\n:8982 / :8983"
+    worker: "Workers + runners"
+    browser: "Browser\n:7984"
+  }
+}
+
+clients -> bes: {
+  label: "--bes_backend\n--results_url"
+  style.stroke: "#1D4ED8"
+}
+
+clients -> rbe.buildfarm.server: {
+  label: "--remote_executor\n--remote_cache"
+  style.stroke: "#4D7C0F"
+}
+
+clients -> rbe.buildbarn.frontend: {
+  label: "--remote_executor\n--remote_cache"
+  style.stroke: "#BE185D"
+}
+
+rbe.buildfarm.server -> rbe.buildfarm.redis: "backplane"
+rbe.buildfarm.server -> rbe.buildfarm.workers: "execution + CAS"
+
+rbe.buildbarn.frontend -> rbe.buildbarn.storage: "CAS / AC"
+rbe.buildbarn.frontend -> rbe.buildbarn.scheduler: "execution dispatch"
+rbe.buildbarn.scheduler -> rbe.buildbarn.worker: "action polling"
+rbe.buildbarn.worker -> rbe.buildbarn.storage: "input / output"
+rbe.buildbarn.frontend -> rbe.buildbarn.browser: "optional UI"

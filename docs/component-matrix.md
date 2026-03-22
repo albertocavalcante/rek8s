@@ -14,7 +14,7 @@
 | **Action Cache** | Redis-backed (4-week TTL) | Local block storage |
 | **Worker isolation** | Single process (optional Docker) | Privilege separation: bb-worker (root) + bb-runner (unprivileged) |
 | **Scaling model** | Server scales horizontally; workers via HPA | Frontend, storage, scheduler, workers all scale independently |
-| **Client support** | Primarily Bazel | Bazel, Buck2, Pants, BuildStream, recc |
+| **Client support** | Primarily Bazel | Bazel, Buck2, Reninja, Pants, BuildStream, recc |
 | **Filesystem req.** | XFS strongly recommended (ext4 link limit) | Filesystem-agnostic |
 | **Build browser** | No built-in UI | bb-browser (web UI for CAS/AC inspection) |
 | **Autoscaler** | HPA (built into Helm chart) | bb-autoscaler (AWS ASG, EKS, K8s Deployment) |
@@ -26,7 +26,7 @@
 - You want a simpler setup with fewer components to manage.
 - Your team is comfortable with Java and the Bazel ecosystem.
 - You prefer using the official, upstream-maintained Helm chart.
-- You only need Bazel as a client (not Buck2, Pants, etc.).
+- You only need Bazel as a client (not Buck2, Reninja, Pants, etc.).
 
 ### When to choose Buildbarn
 
@@ -34,7 +34,7 @@
   and workers independently).
 - You need privilege separation between the worker orchestrator and the
   build runner.
-- You use multiple build systems (Buck2, Pants, etc.) in addition to Bazel.
+- You use multiple build systems (Buck2, Reninja, Pants, etc.) in addition to Bazel.
 - You want self-cleaning CAS storage that doesn't require XFS.
 - You want a CAS/AC browser UI for debugging failed actions.
 

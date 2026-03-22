@@ -1,0 +1,58 @@
+direction: right
+
+clients: {
+  label: "Bazel / Buck2 / Reninja"
+  style: {
+    fill: "#E2E8F0"
+    stroke: "#334155"
+    font-color: "#0F172A"
+  }
+}
+
+rek8s: {
+  label: "rek8s umbrella chart"
+  direction: down
+  style: {
+    fill: "#F8FAFC"
+    stroke: "#0F172A"
+    stroke-width: 2
+  }
+
+  platform: {
+    direction: right
+
+    bes: {
+      label: "BES\nBuildBuddy OSS"
+      style: {
+        fill: "#DBEAFE"
+        stroke: "#1D4ED8"
+      }
+    }
+
+    rbe: {
+      label: "RBE\nBuildfarm or Buildbarn"
+      style: {
+        fill: "#DCFCE7"
+        stroke: "#15803D"
+      }
+    }
+  }
+
+  infrastructure: {
+    label: "Infrastructure Layer\nNetworkPolicy · Ingress · TLS\nStorage · RBAC · Observability"
+    style: {
+      fill: "#FEF3C7"
+      stroke: "#B45309"
+    }
+  }
+}
+
+clients -> rek8s.platform.bes: {
+  label: "--bes_backend\n--results_url"
+  style.stroke: "#1D4ED8"
+}
+
+clients -> rek8s.platform.rbe: {
+  label: "--remote_executor\n--remote_cache"
+  style.stroke: "#15803D"
+}

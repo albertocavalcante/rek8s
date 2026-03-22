@@ -4,31 +4,15 @@
 
 ## Overview
 
-rek8s is an umbrella Helm chart that deploys a complete Bazel remote build
+rek8s is an umbrella Helm chart that deploys a complete remote build
 infrastructure on Kubernetes. It lets operators choose which **Build Event
 Service (BES)** and which **Remote Build Execution (RBE)** backend to run,
 while providing unified networking, security, observability, and storage
 configuration that adapts to the target cluster's capabilities.
 
-```
-                          ┌──────────────────────────────────────────────┐
-                          │              rek8s umbrella chart            │
-                          │                                              │
-  Bazel clients           │  ┌────────────┐        ┌─────────────────┐  │
-  ──────────────────────▶  │  │    BES      │        │      RBE        │  │
-  --bes_backend=...       │  │             │        │                 │  │
-  --remote_executor=...   │  │ ● BuildBuddy│        │ ● Buildfarm    │  │
-  --remote_cache=...      │  │   OSS       │        │ ● Buildbarn    │  │
-                          │  └──────┬──────┘        └────────┬────────┘  │
-                          │         │                        │           │
-                          │  ┌──────┴────────────────────────┴────────┐  │
-                          │  │           Infrastructure Layer          │  │
-                          │  │                                        │  │
-                          │  │  NetworkPolicy · Ingress · TLS certs   │  │
-                          │  │  Storage · RBAC · Observability        │  │
-                          │  └────────────────────────────────────────┘  │
-                          └──────────────────────────────────────────────┘
-```
+![rek8s overview](diagrams/overview.svg)
+
+Source: [`diagrams/overview.d2`](diagrams/overview.d2)
 
 ## Component Matrix
 
@@ -48,47 +32,14 @@ configuration that adapts to the target cluster's capabilities.
 - **Buildbarn** is the more modular, Go-based alternative. It separates
   concerns more aggressively (frontend, storage shards, scheduler, worker,
   runner) and uses a block-based self-cleaning CAS.
+- **Reninja** is a Ninja-compatible REAPI client that can target the same
+  BES, remote cache, and remote execution endpoints as Bazel and Buck2.
 
 ## Data Flow
 
-```
-  ┌─────────┐
-  │  Bazel  │
-  │ client  │
-  └────┬────┘
-       │
-       │  gRPC
-       │
-       ├──────────────────────────────────────────────────────────────┐
-       │ --bes_backend=grpcs://bes.example.com                      │
-       │                                                              ▼
-       │                                                    ┌─────────────────┐
-       │                                                    │  BuildBuddy OSS │
-       │                                                    │  :1985 (gRPC)   │
-       │                                                    │  :8080 (HTTP)   │
-       │                                                    └─────────────────┘
-       │
-       │ --remote_executor=grpcs://rbe.example.com:8980
-       │ --remote_cache=grpcs://rbe.example.com:8980
-       │
-       ▼
-  ┌──────────────────────────────────────────────┐
-  │              RBE Backend (pick one)          │
-  │                                              │
-  │  ┌─ Buildfarm ───────────────────────────┐   │
-  │  │  Server (:8980) ──▶ Redis backplane   │   │
-  │  │  Workers (:8982) ── StatefulSet+PVC   │   │
-  │  └──────────────────────────────────────-┘   │
-  │                    OR                        │
-  │  ┌─ Buildbarn ──────────────────────────-┐   │
-  │  │  Frontend/bb-storage (:8980)          │   │
-  │  │  Storage shards (:8981) ── SS+PVC    │   │
-  │  │  Scheduler (:8982/:8983)             │   │
-  │  │  Workers+Runners (sidecar pattern)   │   │
-  │  │  Browser (:7984)                     │   │
-  │  └──────────────────────────────────────-┘   │
-  └──────────────────────────────────────────────┘
-```
+![rek8s data flow](diagrams/data-flow.svg)
+
+Source: [`diagrams/data-flow.d2`](diagrams/data-flow.d2)
 
 ## Namespace Layout
 
@@ -155,8 +106,8 @@ default-deny policy that blocks all ingress/egress except:
 
 | Source | Destination | Port | Purpose |
 |--------|-------------|------|---------|
-| Bazel client (external) | BES ingress | 1985 | Build events |
-| Bazel client (external) | RBE ingress | 8980 | Remote execution / cache |
+| Remote build client (external) | BES ingress | 1985 | Build events |
+| Remote build client (external) | RBE ingress | 8980 | Remote execution / cache |
 | Buildfarm server | Redis | 6379 | Backplane |
 | Buildfarm worker | Redis | 6379 | Backplane |
 | Buildfarm worker | Buildfarm worker | 8982 | Peer CAS transfer |

@@ -62,10 +62,10 @@ only one at a time per deployment.
   good for teams that want fewer moving parts.
 - Buildbarn: more modular, Go ecosystem, block-based self-cleaning CAS,
   better privilege separation (worker/runner split), supports more build
-  systems (Buck2, Pants, recc). Better for teams that want fine-grained
-  scaling control.
-- Both implement the same Remote Execution API v2, so Bazel clients work
-  identically with either backend.
+  systems (Buck2, Reninja, Pants, recc). Better for teams that want
+  fine-grained scaling control.
+- Both implement the same Remote Execution API v2, so Bazel, Buck2, and
+  Reninja clients can target either backend.
 
 ---
 
