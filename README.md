@@ -173,6 +173,7 @@ Use them as-is or as a starting point for your own configuration.
 | [`alibaba-ack`](examples/cluster-profiles/alibaba-ack.yaml) | ACK / Terway | ACK-managed nginx | Standard k8s | cert-manager | Alibaba Cloud ACK |
 | [`k3s-traefik-gateway`](examples/cluster-profiles/k3s-traefik-gateway.yaml) | K3s / Flannel + kube-router | Gateway API / Traefik | Standard k8s | cert-manager | K3s edge or homelab |
 | [`rke2-traefik-gateway`](examples/cluster-profiles/rke2-traefik-gateway.yaml) | RKE2 / Canal | Gateway API / Traefik | Standard k8s | cert-manager | RKE2 self-managed clusters |
+| [`talos-cilium-gateway`](examples/cluster-profiles/talos-cilium-gateway.yaml) | Talos / Cilium | Gateway API / Cilium | Standard k8s | cert-manager | Talos self-managed clusters |
 | [`vanilla`](examples/cluster-profiles/vanilla.yaml) | Any | None (NodePort) | Disabled | Disabled | Dev / CI |
 
 ```bash

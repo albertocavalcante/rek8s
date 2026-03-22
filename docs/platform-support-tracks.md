@@ -99,6 +99,7 @@ Directly supported now:
 
 - `k3s-traefik-gateway.yaml`
 - `rke2-traefik-gateway.yaml`
+- `talos-cilium-gateway.yaml`
 
 Why separate:
 
@@ -110,10 +111,17 @@ Recommended support model:
 
 - document them as “distribution profiles”
 - prefer Gateway API when the distribution already ships Traefik
+- use Cilium Gateway API when the distribution documents Cilium as the primary
+  advanced networking path
 - keep the values files simple and focused on ingress/CNI/storage assumptions
 
 ## Sources
 
+- Talos deploying Cilium: <https://www.talos.dev/latest/kubernetes-guides/network/deploying-cilium/>
+- Talos KubePrism: <https://www.talos.dev/v1.8/kubernetes-guides/configuration/kubeprism/>
+- Talos ingress firewall: <https://www.talos.dev/v1.11/talos-guides/network/ingress-firewall/>
+- Talos process capabilities: <https://www.talos.dev/v1.6/learn-more/process-capabilities/>
+- Cilium Gateway API support: <https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/>
 - K3s packaged components: <https://docs.k3s.io/installation/packaged-components>
 - K3s networking services: <https://docs.k3s.io/networking/networking-services>
 - K3s Helm customization: <https://docs.k3s.io/add-ons/helm>

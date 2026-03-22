@@ -329,6 +329,26 @@ Notes:
   the default for new v1.36 clusters.
 - ServiceLB is optional on RKE2 and must be enabled explicitly when desired.
 
+### `talos-cilium-gateway` (Talos with Cilium Gateway API)
+
+```
+CNI:              Cilium
+Ingress:          Gateway API (Cilium)
+TLS:              cert-manager
+Network Policies: Standard Kubernetes NetworkPolicy
+Storage:          Cluster default StorageClass
+Monitoring:       Prometheus Operator (optional)
+```
+
+Notes:
+- Talos Cilium installs start with `cluster.network.cni.name: none` in machine
+  configuration and then install Cilium separately.
+- Talos Cilium guidance assumes KubePrism is enabled on port 7445 for API
+  access during CNI bootstrap.
+- Talos Ingress Firewall is host-level and separate from pod/service traffic;
+  Talos documents that Cilium Host Firewall may take precedence over OS-level
+  rules.
+
 ### `docker-desktop` (Local Docker Desktop)
 
 ```

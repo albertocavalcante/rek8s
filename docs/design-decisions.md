@@ -97,6 +97,7 @@ Kubernetes cluster configurations.
   - `alibaba-ack.yaml` -- Alibaba ACK with Terway + managed NGINX ingress
   - `k3s-traefik-gateway.yaml` -- K3s via packaged Traefik Gateway API
   - `rke2-traefik-gateway.yaml` -- RKE2 via Traefik Gateway API
+  - `talos-cilium-gateway.yaml` -- Talos Linux via Cilium Gateway API
   - `vanilla-nginx.yaml` -- generic Kubernetes + ingress-nginx
   - `vanilla.yaml` -- minimal local / CI footprint without ingress
 

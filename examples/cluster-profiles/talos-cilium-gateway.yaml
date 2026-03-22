@@ -1,0 +1,82 @@
+# rek8s cluster profile: Talos Linux + Cilium Gateway API
+#
+# For Talos clusters using:
+#   - Cilium as the CNI
+#   - Gateway API via the Cilium Gateway controller
+#   - an operator-provided default StorageClass
+#
+# Prerequisites:
+#   - Talos cluster generated with cluster.network.cni.name: none
+#   - Cilium installed with Gateway API enabled
+#   - Gateway API CRDs installed
+#   - Gateway named rek8s-public created from
+#     examples/gateways/cilium-public-gateway.yaml
+#   - a default StorageClass available in the cluster
+#   - cert-manager installed if TLS is enabled
+#
+# Usage:
+#   helm install rek8s ./charts/rek8s \
+#     -f examples/cluster-profiles/talos-cilium-gateway.yaml \
+#     --set global.domain=build.example.com
+
+global:
+  domain: "build.example.com"
+  storageClass: ""  # use the cluster default StorageClass
+  tls:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+
+bes:
+  buildbuddy:
+    enabled: true
+    replicaCount: 2
+    storage:
+      type: disk
+      disk:
+        size: 50Gi
+    database:
+      type: mysql
+      # mysql:
+      #   host: mysql.internal.example
+      #   port: 3306
+      #   user: buildbuddy
+      #   database: buildbuddy
+      #   existingSecret: buildbuddy-mysql
+
+rbe:
+  buildfarm:
+    enabled: true
+    server:
+      replicaCount: 2
+    worker:
+      replicaCount: 4
+      storage:
+        size: 100Gi
+    redis:
+      type: embedded
+
+  buildbarn:
+    enabled: false
+
+cluster:
+  networkPolicy:
+    enabled: true
+    provider: kubernetes
+
+  ingress:
+    enabled: true
+    provider: gateway-api
+    gatewayRef:
+      name: rek8s-public
+      namespace: rek8s-ingress
+
+  certManager:
+    enabled: true
+
+observability:
+  prometheus:
+    serviceMonitor: false
+  grafana:
+    dashboards: false

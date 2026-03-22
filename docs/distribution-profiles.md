@@ -5,10 +5,32 @@ the current `rek8s` chart shape without inventing provider-specific APIs:
 
 - K3s with Traefik + Gateway API
 - RKE2 with Traefik + Gateway API
+- Talos Linux with Cilium + Gateway API
 
 These are intentionally routed through Gateway API instead of the older
 `ingress-nginx` path. As of March 2026, RKE2 has moved new clusters toward
 Traefik, and K3s has shipped Traefik v3 since the Kubernetes 1.32 line.
+
+## Talos + Cilium Gateway Path
+
+Talos does not treat the CNI as a throwaway add-on. The documented Cilium path
+starts by generating Talos machine configuration with `cluster.network.cni.name:
+none` and then installing Cilium explicitly.
+
+Create a shared Cilium Gateway:
+
+- [`examples/gateways/cilium-public-gateway.yaml`](../examples/gateways/cilium-public-gateway.yaml)
+
+Important details:
+
+- Cilium Gateway API support must be enabled explicitly with
+  `gatewayAPI.enabled=true`.
+- Cilium documents that Gateway API requires NodePort or kube-proxy
+  replacement.
+- Cilium only programs Gateways whose class is `cilium`.
+- If the Gateway has no external address, Cilium documents that you may be
+  missing a LoadBalancer implementation. On bare metal, plan for MetalLB,
+  LB-IPAM, or Cilium host-network mode.
 
 ## Shared Traefik Gateway Path
 
@@ -104,8 +126,44 @@ Gotchas:
   `NetworkPolicy`. That is true for Canal, Calico, and Cilium. RKE2 documents
   that Flannel does not support network policies.
 
+## Talos
+
+Example file:
+
+- [`examples/cluster-profiles/talos-cilium-gateway.yaml`](../examples/cluster-profiles/talos-cilium-gateway.yaml)
+
+Install:
+
+```bash
+helm install rek8s ./charts/rek8s \
+  -f examples/cluster-profiles/talos-cilium-gateway.yaml \
+  --set global.domain=build.example.com
+```
+
+Why this profile leaves storage generic:
+
+- Talos itself is not a storage distribution, so this profile expects a
+  deliberate default StorageClass such as Longhorn, Ceph, or another CSI.
+- The profile focuses on the networking and ingress path that Talos documents
+  most clearly: Cilium with explicit bootstrap settings.
+
+Gotchas:
+
+- Talos documents that Cilium install starts with `cluster.network.cni.name:
+  none` and assumes KubePrism is enabled on port 7445.
+- Talos restricts `CAP_SYS_MODULE`, and the Talos Cilium guide documents
+  dropping `SYS_MODULE` from Cilium defaults.
+- Talos Ingress Firewall does not govern pod/service traffic; use CNI network
+  policy for workloads.
+- If you enable Cilium Host Firewall as well, Talos documents that it may take
+  precedence in the nftables chain and bypass OS-level rules.
+
 ## Sources
 
+- Talos deploying Cilium: <https://www.talos.dev/latest/kubernetes-guides/network/deploying-cilium/>
+- Talos KubePrism: <https://www.talos.dev/v1.8/kubernetes-guides/configuration/kubeprism/>
+- Talos ingress firewall: <https://www.talos.dev/v1.11/talos-guides/network/ingress-firewall/>
+- Talos process capabilities: <https://www.talos.dev/v1.6/learn-more/process-capabilities/>
 - K3s packaged components: <https://docs.k3s.io/installation/packaged-components>
 - K3s networking services: <https://docs.k3s.io/networking/networking-services>
 - K3s basic network options: <https://docs.k3s.io/networking/basic-network-options>
@@ -115,3 +173,4 @@ Gotchas:
 - RKE2 basic network options: <https://docs.rke2.io/networking/basic_network_options>
 - RKE2 HelmChartConfig customization: <https://docs.rke2.io/add-ons/helm>
 - Traefik Kubernetes Gateway provider: <https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-gateway/>
+- Cilium Gateway API support: <https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/>

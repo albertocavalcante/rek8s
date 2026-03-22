@@ -166,9 +166,28 @@ Main gotchas:
 - Standard Kubernetes `NetworkPolicy` depends on using Canal, Calico, or
   Cilium instead of Flannel.
 
+### Talos Linux
+
+Status: added in [`talos-cilium-gateway.yaml`](../examples/cluster-profiles/talos-cilium-gateway.yaml)
+
+Why it graduated:
+
+- Talos documents a clear Cilium installation path and explicitly documents the
+  bootstrap requirements.
+- Cilium Gateway API support is mature enough to fit the existing `rek8s`
+  Gateway API mode without adding provider-specific chart logic.
+
+Main gotchas:
+
+- Talos Cilium bootstrap starts with `cluster.network.cni.name: none`, so the
+  cluster looks unhealthy until Cilium is installed.
+- On bare metal, a Cilium Gateway may have no external address until you add a
+  load-balancer implementation or use Cilium host-network mode.
+- Storage remains external to Talos itself, so the profile intentionally
+  expects a default StorageClass supplied by the operator.
+
 Remaining distribution candidates:
 
-- Talos Linux
 - Cluster API-based installs
 - vSphere-backed clusters
 - Proxmox-backed clusters
@@ -201,3 +220,7 @@ profiles into a broader “distribution profiles” section.
 - RKE2 basic network options: <https://docs.rke2.io/networking/basic_network_options>
 - RKE2 Helm customization: <https://docs.rke2.io/add-ons/helm>
 - Traefik Gateway API provider: <https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-gateway/>
+- Talos deploying Cilium: <https://www.talos.dev/latest/kubernetes-guides/network/deploying-cilium/>
+- Talos KubePrism: <https://www.talos.dev/v1.8/kubernetes-guides/configuration/kubeprism/>
+- Talos ingress firewall: <https://www.talos.dev/v1.11/talos-guides/network/ingress-firewall/>
+- Cilium Gateway API support: <https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/>

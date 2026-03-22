@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rek8s-ingress
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: rek8s-public
+  namespace: rek8s-ingress
+spec:
+  gatewayClassName: cilium
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          # The Secret must exist in the same namespace as the Gateway.
+          - kind: Secret
+            name: placeholder-cilium-gateway-cert
+      allowedRoutes:
+        namespaces:
+          from: All
