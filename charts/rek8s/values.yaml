@@ -10,6 +10,8 @@
 global:
   # Base domain for all services. Services will be exposed as:
   #   bes.<domain>      -- BuildBuddy UI + BES gRPC
+  #   cache.<domain>    -- bazel-remote HTTP / status
+  #   cache-grpc.<domain> -- bazel-remote gRPC cache
   #   rbe.<domain>      -- RBE gRPC endpoint
   #   bb-browser.<domain> -- Buildbarn browser (if applicable)
   domain: "example.com"
@@ -37,8 +39,45 @@ global:
 namespaces:
   create: true
   bes: rek8s-bes
+  cache: rek8s-cache
   rbe: rek8s-rbe
   monitoring: rek8s-monitoring
+
+# ---------------------------------------------------------------------------
+# Cache provider selection
+# ---------------------------------------------------------------------------
+cache:
+  bazelRemote:
+    enabled: false
+
+    replicaCount: 1
+
+    image:
+      repository: buchgr/bazel-remote-cache
+      tag: latest
+      pullPolicy: IfNotPresent
+
+    service:
+      type: ClusterIP
+      httpPort: 8080
+      grpcPort: 9092
+
+    storage:
+      size: 100Gi
+      existingClaim: ""
+
+    config:
+      maxSizeGiB: 100
+      storageMode: zstd
+      experimentalRemoteAssetAPI: false
+
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
 
 # ---------------------------------------------------------------------------
 # BES (Build Event Service) provider selection

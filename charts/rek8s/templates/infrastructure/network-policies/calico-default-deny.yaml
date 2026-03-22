@@ -1,7 +1,7 @@
 {{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "calico") .Values.cluster.networkPolicy.defaultDeny.enabled }}
 # Default deny all traffic in rek8s namespaces.
 # Component-specific allow rules override this (lower order number = higher priority).
-{{- $namespaces := list .Values.namespaces.bes .Values.namespaces.rbe }}
+{{- $namespaces := list .Values.namespaces.bes .Values.namespaces.cache .Values.namespaces.rbe }}
 {{- range $ns := $namespaces }}
 ---
 apiVersion: projectcalico.org/v3

@@ -15,6 +15,7 @@ keywords:
   - build-event-service
   - buildfarm
   - buildbarn
+  - bazel-remote
   - buildbuddy
   - rbe
   - bes

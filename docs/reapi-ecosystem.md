@@ -95,6 +95,17 @@ Source:
 Source for `Reclient` description:
 - [reclient README](https://github.com/bazelbuild/reclient)
 
+## Tooling To Know
+
+Two tools are especially useful around deployed clusters:
+
+- [`bf-client`](https://github.com/buildfarm/bf-client): a Buildfarm-specific
+  terminal UI that talks to the Buildfarm Redis backplane and REAPI endpoint
+- [`reclient`](https://github.com/bazelbuild/reclient): an integration layer
+  that lets an existing build system use remote execution and remote caching
+
+See [`client-tooling.md`](client-tooling.md) for rek8s-specific usage notes.
+
 ## BES Caveat
 
 REAPI compatibility is **not** the same thing as Build Event Service

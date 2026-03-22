@@ -14,6 +14,18 @@ BES (BuildBuddy OSS):
   {{- end }}
 {{- end }}
 
+{{- if .Values.cache.bazelRemote.enabled }}
+
+Remote Cache (bazel-remote):
+  {{- if .Values.cluster.ingress.enabled }}
+  HTTP status:   https://cache.{{ .Values.global.domain }}/status
+  gRPC cache:    grpcs://cache-grpc.{{ .Values.global.domain }}:443
+  {{- else }}
+  kubectl port-forward -n {{ .Values.namespaces.cache }} svc/{{ include "rek8s.fullname" . }}-bazel-remote 8080:8080
+  kubectl port-forward -n {{ .Values.namespaces.cache }} svc/{{ include "rek8s.fullname" . }}-bazel-remote 9092:9092
+  {{- end }}
+{{- end }}
+
 {{- if .Values.rbe.buildfarm.enabled }}
 
 RBE (Buildfarm):
@@ -39,8 +51,17 @@ RBE (Buildbarn):
 
 Add to your project's .bazelrc:
 
+{{- if .Values.cache.bazelRemote.enabled }}
+  build:rek8s-cache --remote_cache=grpcs://cache-grpc.{{ .Values.global.domain }}:443
+{{- end }}
+{{- if .Values.bes.buildbuddy.enabled }}
   build:rek8s --bes_backend=grpcs://{{ include "rek8s.bes.grpcHostname" . }}:443
   build:rek8s --bes_results_url=https://{{ include "rek8s.bes.hostname" . }}/invocation/
+{{- end }}
+{{- if or .Values.rbe.buildfarm.enabled .Values.rbe.buildbarn.enabled }}
   build:rek8s --remote_executor=grpcs://{{ include "rek8s.rbe.hostname" . }}:443
+{{- end }}
 
-Then build with:  bazel build --config=rek8s //...
+Then build with:
+  bazel build --config=rek8s-cache //...
+  bazel build --config=rek8s //...

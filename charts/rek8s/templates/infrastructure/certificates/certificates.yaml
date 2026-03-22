@@ -45,6 +45,52 @@ spec:
   renewBefore: 360h
 {{- end }}
 ---
+{{- if .Values.cache.bazelRemote.enabled }}
+# TLS certificate for cache HTTP endpoint
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rek8s.fullname" . }}-cache-tls
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  {{- with .Values.cluster.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  secretName: {{ include "rek8s.fullname" . }}-cache-tls
+  issuerRef:
+    name: {{ .Values.global.tls.issuerRef.name }}
+    kind: {{ .Values.global.tls.issuerRef.kind }}
+  dnsNames:
+    - cache.{{ .Values.global.domain }}
+  duration: 2160h
+  renewBefore: 360h
+---
+# TLS certificate for cache gRPC endpoint
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rek8s.fullname" . }}-cache-grpc-tls
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  {{- with .Values.cluster.certManager.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  secretName: {{ include "rek8s.fullname" . }}-cache-grpc-tls
+  issuerRef:
+    name: {{ .Values.global.tls.issuerRef.name }}
+    kind: {{ .Values.global.tls.issuerRef.kind }}
+  dnsNames:
+    - cache-grpc.{{ .Values.global.domain }}
+  duration: 2160h
+  renewBefore: 360h
+---
+{{- end }}
 {{- if or .Values.rbe.buildfarm.enabled .Values.rbe.buildbarn.enabled }}
 # TLS certificate for RBE gRPC endpoint
 apiVersion: cert-manager.io/v1

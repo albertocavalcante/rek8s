@@ -1,0 +1,43 @@
+{{- if and .Values.cluster.ingress.enabled (eq .Values.cluster.ingress.provider "gateway-api") .Values.cache.bazelRemote.enabled }}
+# Gateway API HTTPRoute for bazel-remote -- HTTP status / metrics
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "rek8s.fullname" . }}-cache-http
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ .Values.cluster.ingress.gatewayRef.name }}
+      namespace: {{ .Values.cluster.ingress.gatewayRef.namespace }}
+  hostnames:
+    - {{ printf "cache.%s" .Values.global.domain | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "rek8s.fullname" . }}-bazel-remote
+          port: {{ .Values.cache.bazelRemote.service.httpPort }}
+---
+# Gateway API GRPCRoute for bazel-remote -- gRPC cache
+apiVersion: gateway.networking.k8s.io/v1
+kind: GRPCRoute
+metadata:
+  name: {{ include "rek8s.fullname" . }}-cache-grpc
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ .Values.cluster.ingress.gatewayRef.name }}
+      namespace: {{ .Values.cluster.ingress.gatewayRef.namespace }}
+  hostnames:
+    - {{ printf "cache-grpc.%s" .Values.global.domain | quote }}
+  rules:
+    - backendRefs:
+        - name: {{ include "rek8s.fullname" . }}-bazel-remote
+          port: {{ .Values.cache.bazelRemote.service.grpcPort }}
+{{- end }}

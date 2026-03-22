@@ -58,6 +58,27 @@ BuildBuddy OSS is the only viable open-source BES backend with a web UI.
 It also provides remote caching, which can be used standalone or alongside
 a separate RBE backend (Buildfarm or Buildbarn).
 
+---
+
+## Cache-Only Backend: bazel-remote
+
+| Aspect | bazel-remote |
+|--------|--------------|
+| **Role** | Remote cache only |
+| **License** | Apache-2.0 |
+| **Protocols** | HTTP/1.1 + gRPC |
+| **REAPI surface** | Action Cache, ContentAddressableStorage, Capabilities, ByteStream |
+| **Remote execution** | No |
+| **Remote Asset API** | Experimental subset |
+| **Storage model** | Disk-backed LRU cache, optional object-store proxy backends |
+| **Typical use case** | Cache-only deployment, or cache paired with a separate BES |
+
+When to choose `bazel-remote`:
+
+- You want a dedicated cache endpoint without running a BES UI.
+- You want cache-only adoption before introducing remote execution.
+- You want to pair a simple cache with a separate BES or execution system.
+
 **Note**: When using BuildBuddy OSS as BES alongside a separate RBE backend,
 a **BES-capable** client sends build events to BuildBuddy (`--bes_backend`)
 while sending execution requests to the RBE backend (`--remote_executor`).
@@ -100,6 +121,9 @@ lists:
 it integrates with an existing build system to enable remote execution and
 caching.
 
+For usage guidance on `bf-client`, `reclient`, and cache-only workflows, see
+[`client-tooling.md`](client-tooling.md).
+
 ---
 
 ## CRD Requirements by Cluster Profile
@@ -131,6 +155,10 @@ BES (BuildBuddy):
   8080/HTTP  -- Web UI, REST API
   1985/gRPC  -- BES, Remote Cache
   9090/HTTP  -- Prometheus metrics
+
+Cache (bazel-remote):
+  8080/HTTP  -- Status, metrics, REST cache API
+  9092/gRPC  -- REAPI cache services
 
 RBE (Buildfarm):
   8980/gRPC  -- REAPI (Execution, CAS, AC, ByteStream)

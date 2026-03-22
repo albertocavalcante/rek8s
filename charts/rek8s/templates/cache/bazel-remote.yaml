@@ -1,0 +1,102 @@
+{{- if .Values.cache.bazelRemote.enabled }}
+{{- $name := printf "%s-bazel-remote" (include "rek8s.fullname" .) }}
+{{- $claimName := default $name .Values.cache.bazelRemote.storage.existingClaim }}
+{{- if not .Values.cache.bazelRemote.storage.existingClaim }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bazel-remote
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.cache.bazelRemote.storage.size }}
+  {{- if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass | quote }}
+  {{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bazel-remote
+spec:
+  replicas: {{ .Values.cache.bazelRemote.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: bazel-remote
+  template:
+    metadata:
+      labels:
+        {{- include "rek8s.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: bazel-remote
+    spec:
+      containers:
+        - name: bazel-remote
+          image: "{{ .Values.cache.bazelRemote.image.repository }}:{{ .Values.cache.bazelRemote.image.tag }}"
+          imagePullPolicy: {{ .Values.cache.bazelRemote.image.pullPolicy }}
+          args:
+            - --dir=/data
+            - --max_size={{ .Values.cache.bazelRemote.config.maxSizeGiB }}
+            - --storage_mode={{ .Values.cache.bazelRemote.config.storageMode }}
+            - --http_address=0.0.0.0:{{ .Values.cache.bazelRemote.service.httpPort }}
+            - --grpc_address=0.0.0.0:{{ .Values.cache.bazelRemote.service.grpcPort }}
+            {{- if .Values.cache.bazelRemote.config.experimentalRemoteAssetAPI }}
+            - --experimental_remote_asset_api
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.cache.bazelRemote.service.httpPort }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.cache.bazelRemote.service.grpcPort }}
+              protocol: TCP
+          readinessProbe:
+            grpc:
+              port: {{ .Values.cache.bazelRemote.service.grpcPort }}
+          livenessProbe:
+            grpc:
+              port: {{ .Values.cache.bazelRemote.service.grpcPort }}
+          resources:
+            {{- toYaml .Values.cache.bazelRemote.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ $claimName }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bazel-remote
+spec:
+  type: {{ .Values.cache.bazelRemote.service.type }}
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: bazel-remote
+  ports:
+    - name: http
+      port: {{ .Values.cache.bazelRemote.service.httpPort }}
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: {{ .Values.cache.bazelRemote.service.grpcPort }}
+      targetPort: grpc
+      protocol: TCP
+{{- end }}

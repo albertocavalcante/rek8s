@@ -1,0 +1,30 @@
+{{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "kubernetes") .Values.cache.bazelRemote.enabled }}
+# Allow ingress to bazel-remote while keeping the namespace ingress-isolated.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-cache-ingress
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: bazel-remote
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: {{ .Values.cache.bazelRemote.service.grpcPort }}
+    - ports:
+        - protocol: TCP
+          port: {{ .Values.cache.bazelRemote.service.httpPort }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.namespaces.monitoring | quote }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.cache.bazelRemote.service.httpPort }}
+{{- end }}

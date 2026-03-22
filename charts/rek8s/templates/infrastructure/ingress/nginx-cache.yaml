@@ -1,0 +1,65 @@
+{{- if and .Values.cluster.ingress.enabled (eq .Values.cluster.ingress.provider "nginx") .Values.cache.bazelRemote.enabled }}
+# nginx Ingress for bazel-remote -- HTTP status / metrics
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rek8s.fullname" . }}-cache-http
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  annotations:
+    {{- include "rek8s.nginxAnnotations" (dict "root" . "mode" "http") | nindent 4 }}
+spec:
+  {{- if .Values.cluster.ingress.className }}
+  ingressClassName: {{ .Values.cluster.ingress.className | quote }}
+  {{- end }}
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ printf "cache.%s" .Values.global.domain | quote }}
+      secretName: {{ include "rek8s.fullname" . }}-cache-tls
+  {{- end }}
+  rules:
+    - host: {{ printf "cache.%s" .Values.global.domain | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rek8s.fullname" . }}-bazel-remote
+                port:
+                  number: {{ .Values.cache.bazelRemote.service.httpPort }}
+---
+# nginx Ingress for bazel-remote -- gRPC cache
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rek8s.fullname" . }}-cache-grpc
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+  annotations:
+    {{- include "rek8s.nginxAnnotations" (dict "root" . "mode" "grpc") | nindent 4 }}
+spec:
+  {{- if .Values.cluster.ingress.className }}
+  ingressClassName: {{ .Values.cluster.ingress.className | quote }}
+  {{- end }}
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ printf "cache-grpc.%s" .Values.global.domain | quote }}
+      secretName: {{ include "rek8s.fullname" . }}-cache-grpc-tls
+  {{- end }}
+  rules:
+    - host: {{ printf "cache-grpc.%s" .Values.global.domain | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rek8s.fullname" . }}-bazel-remote
+                port:
+                  number: {{ .Values.cache.bazelRemote.service.grpcPort }}
+{{- end }}

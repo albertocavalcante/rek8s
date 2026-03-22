@@ -19,6 +19,7 @@ Source: [`diagrams/overview.d2`](diagrams/overview.d2)
 | Role | Provider | Type | License | Notes |
 |------|----------|------|---------|-------|
 | **BES** | BuildBuddy OSS | Build Event Service + Remote Cache + UI | MIT | Only viable OSS BES with a web UI |
+| **Cache** | bazel-remote | Remote Cache only | Apache-2.0 | HTTP + gRPC cache service, no remote execution |
 | **RBE** | Buildfarm | Remote Execution + CAS | Apache-2.0 | Java, Redis backplane, official Helm chart |
 | **RBE** | Buildbarn | Remote Execution + CAS | Apache-2.0 | Go, modular (bb-storage/scheduler/worker/runner), no official Helm chart |
 
@@ -30,6 +31,8 @@ For broader ecosystem context beyond the providers currently charted here, see
 - **BuildBuddy OSS** is the only open-source project that provides a usable
   BES backend with a web UI. Its remote cache can also serve as the sole
   cache layer if RBE is not needed.
+- **bazel-remote** is a cache-only service. It is useful when teams want a
+  dedicated remote cache without introducing a BES UI or an execution backend.
 - **Buildfarm** is the Bazel project's reference RBE implementation. It has
   an official Helm chart and a simpler two-tier architecture (server + worker).
 - **Buildbarn** is the more modular, Go-based alternative. It separates
@@ -51,6 +54,7 @@ Source: [`diagrams/data-flow.d2`](diagrams/data-flow.d2)
 ```
 rek8s-system          # umbrella chart metadata, shared configmaps
 rek8s-bes             # BES provider (BuildBuddy)
+rek8s-cache           # cache provider (bazel-remote)
 rek8s-rbe             # RBE provider (Buildfarm or Buildbarn)
 rek8s-monitoring      # Prometheus ServiceMonitors, dashboards (optional)
 ```
@@ -64,6 +68,8 @@ Operators can override to deploy into existing namespaces.
 |---------|------|----------|-------------|
 | BuildBuddy gRPC | 1985 | gRPC(S) | BES, Remote Cache APIs |
 | BuildBuddy HTTP | 8080 | HTTP(S) | Web UI, REST |
+| bazel-remote HTTP | 8080 | HTTP(S) | Cache status, metrics, REST cache API |
+| bazel-remote gRPC | 9092 | gRPC(S) | Remote cache APIs |
 | Buildfarm server | 8980 | gRPC(S) | REAPI (Execution, CAS, AC, ByteStream) |
 | Buildfarm worker | 8982 | gRPC | Worker-to-worker CAS, health |
 | Buildfarm metrics | 9090 | HTTP | Prometheus scrape |
@@ -163,6 +169,8 @@ BuildBuddy needs a SQL database for metadata:
 - **BuildBuddy UI**: The BES UI itself provides build timing, logs, and
   artifact browsing at `https://bes.example.com`.
 - **Buildbarn Browser**: Optional CAS/AC browser at `https://bb-browser.example.com`.
+- **Client tooling**: See [`client-tooling.md`](client-tooling.md) for
+  `bf-client`, `reclient`, and cache-only usage notes.
 
 ## High Availability
 

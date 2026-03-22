@@ -1,0 +1,15 @@
+# .bazelrc configuration for rek8s with bazel-remote as a cache-only backend
+#
+# Usage: copy these flags to your project's .bazelrc or use --config=rek8s-cache
+
+# Remote cache only
+build:rek8s-cache --remote_cache=grpcs://cache-grpc.build.example.com:443
+build:rek8s-cache --remote_timeout=3600
+build:rek8s-cache --remote_download_minimal
+
+# Optional: use BuildBuddy OSS separately for BES / invocation UX
+# build:rek8s-cache --bes_backend=grpcs://bes-grpc.build.example.com:443
+# build:rek8s-cache --bes_results_url=https://bes.build.example.com/invocation/
+
+# Optional: enable only if bazel-remote is started with remote asset API support
+# build:rek8s-cache --experimental_remote_downloader=grpcs://cache-grpc.build.example.com:443

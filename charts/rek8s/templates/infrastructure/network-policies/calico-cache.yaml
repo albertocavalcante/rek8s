@@ -1,0 +1,33 @@
+{{- if and .Values.cluster.networkPolicy.enabled (eq .Values.cluster.networkPolicy.provider "calico") .Values.cache.bazelRemote.enabled }}
+# Allow ingress to bazel-remote from external clients and monitoring.
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: {{ include "rek8s.fullname" . }}-cache-ingress
+  namespace: {{ .Values.namespaces.cache }}
+  labels:
+    {{- include "rek8s.labels" . | nindent 4 }}
+spec:
+  selector: app.kubernetes.io/component == 'bazel-remote'
+  order: 100
+  types:
+    - Ingress
+  ingress:
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - {{ .Values.cache.bazelRemote.service.grpcPort }}
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - {{ .Values.cache.bazelRemote.service.httpPort }}
+    - action: Allow
+      protocol: TCP
+      source:
+        namespaceSelector: kubernetes.io/metadata.name == '{{ .Values.namespaces.monitoring }}'
+      destination:
+        ports:
+          - {{ .Values.cache.bazelRemote.service.httpPort }}
+{{- end }}
