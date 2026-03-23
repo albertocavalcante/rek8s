@@ -105,6 +105,7 @@ Practical implications for `rek8s`:
 
 See [`bare-metal-load-balancers.md`](./bare-metal-load-balancers.md) for the
 first MetalLB-based answer documented in this repo.
+See [`kube-vip.md`](./kube-vip.md) for the control-plane VIP path.
 
 ## Talos On Proxmox Or VMware
 

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubevip
+  namespace: kube-system
+data:
+  # Replace this with real addresses from your LAN or routed subnet.
+  range-global: 198.51.100.240-198.51.100.250

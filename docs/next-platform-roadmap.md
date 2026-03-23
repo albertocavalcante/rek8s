@@ -236,8 +236,23 @@ Current first answer:
 Still open:
 
 - BGP / FRR guidance
-- kube-vip as a service load balancer
 - Cilium LB-IPAM guidance
+
+### kube-vip
+
+Status: guide added in [`kube-vip.md`](./kube-vip.md)
+
+What it covers now:
+
+- control-plane VIPs for kubeadm-style HA clusters
+- optional on-prem `LoadBalancer` service exposure via kube-vip-cloud-provider
+
+Why it is still not a direct `rek8s` profile:
+
+- kube-vip solves VIP and advertisement problems, not CNI or ingress-model
+  selection
+- its service mode still depends on environment-specific address pools and
+  advertisement choices
 
 ## Sources
 

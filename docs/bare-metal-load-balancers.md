@@ -123,10 +123,13 @@ This repo does not yet ship a first-class example for:
 - MetalLB BGP mode
 - FRR-backed MetalLB mode
 - Cilium LB-IPAM
-- kube-vip as a service load balancer
+- kube-vip as a general-purpose service load balancer
 
 Those are real options, but they require more network-specific assumptions than
 the current repo examples should hide.
+
+For control-plane VIPs and the narrower kube-vip service story, see
+[`kube-vip.md`](./kube-vip.md).
 
 ## Sources
 
