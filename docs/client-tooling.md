@@ -10,8 +10,16 @@ being charted providers themselves.
 | `bf-client` | Buildfarm operator UI | Live queue and worker visibility for Buildfarm |
 | `reclient` | REAPI integration layer | Wrapping existing build actions for remote exec/cache |
 | `tools_remote` / `remote_client` | REAPI debug client | Downloading blobs, inspecting actions, replaying failures |
+| `remotetool` | REAPI debug toolkit | Downloading action results, re-executing actions, cache inspection |
+| `rexec` | One-shot REAPI executor | Probing a remote executor with a single command |
+| `bazelcredswrapper` | Auth bridge | Reusing Bazel credential helpers with SDK tools |
+| `tweag-credential-helper` | Credential helper framework | Auth for remote cache/execution endpoints and external artifacts |
 | `bb-clientd` | Client-side daemon / proxy | Local caching, CAS browsing, remote-build acceleration |
 | `bb-browser` | Web browser for CAS/AC | Human inspection of CAS/AC objects |
+| `bb-portal` | BES / BEP web UI | Persisted, browsable Bazel invocation results |
+| `recc` | Compiler wrapper client | C/C++-oriented remote cache and execution adoption |
+| `bgd` internal client | Minimal REAPI client | Quick BuildGrid-side functional testing |
+| `buildbox-casd` | Local CAS proxy/cache | Worker-side or local CAS acceleration |
 | `rexplorer` | Action inspector | Structured Action + ActionResult inspection |
 | `casdownload` / `casupload` | CAS transfer tools | Pulling or pushing trees and blobs |
 | `logstreamtail` | Log stream reader | Following REAPI LogStream output |
@@ -177,6 +185,115 @@ How rek8s maps to it:
   `Buildbarn` cache/CAS endpoints.
 - Best suited for post-failure inspection and cache debugging.
 
+## `remotetool`
+
+Upstream:
+- [bazelbuild/remote-apis-sdks](https://github.com/bazelbuild/remote-apis-sdks)
+
+What it is:
+- A CLI from the Remote API SDKs repository for common REAPI debugging
+  operations.
+- Upstream describes it as supporting file and directory upload/download,
+  displaying action details, downloading action results, and re-executing
+  actions.
+
+What it is good for:
+- Inspecting a single action without a full build-system integration.
+- Downloading a remote action result to a local directory.
+- Re-running a remote action for debugging.
+
+Example shape:
+
+```bash
+remotetool \
+  --operation=download_action_result \
+  --service=127.0.0.1:8980 \
+  --instance=default \
+  --digest=<sha256>/<size> \
+  --path=/tmp/action-out
+```
+
+How rek8s maps to it:
+- A strong fit for Buildfarm, Buildbarn, and other REAPI executors exposed by
+  rek8s.
+- More execution-oriented than `remote_client`, which is especially handy for
+  cache and gRPC-log debugging.
+
+## `rexec`
+
+Upstream:
+- [bazelbuild/remote-apis-sdks](https://github.com/bazelbuild/remote-apis-sdks)
+
+What it is:
+- A one-shot command runner for remote execution.
+- Upstream describes it as executing a command remotely, then downloading the
+  outputs and propagating `stdout` and `stderr`.
+
+What it is good for:
+- Smoke-testing a newly deployed executor.
+- Validating platform properties, instance names, and auth/TLS settings
+  without involving Bazel or another build system.
+- Reproducing “can this backend execute this command at all?” issues quickly.
+
+Example shape:
+
+```bash
+rexec \
+  --service=127.0.0.1:8980 \
+  --instance=default \
+  --exec_root="$PWD" \
+  --inputs=README.md \
+  --output_files=out.txt \
+  -- /bin/sh -c 'cat README.md > out.txt'
+```
+
+How rek8s maps to it:
+- This is one of the cleanest ways to validate the RBE side of a rek8s
+  deployment before layering on Bazel, Reninja, or `reclient`.
+
+## `bazelcredswrapper`
+
+Upstream:
+- [bazelbuild/remote-apis-sdks](https://github.com/bazelbuild/remote-apis-sdks)
+
+What it is:
+- A small bridge binary that lets Remote API SDK tools authenticate using a
+  Bazel-style credentials helper.
+- Upstream states it is used to authenticate the SDK tools with Bazel-style
+  credentials helpers.
+
+What it is good for:
+- Reusing an existing Bazel credential-helper setup with `rexec` or
+  `remotetool`.
+- Avoiding duplicate auth configuration between Bazel and SDK-side debug tools.
+
+How rek8s maps to it:
+- Useful when a rek8s deployment is fronted by TLS and auth and you want the
+  SDK tools to follow the same helper path as Bazel.
+
+## `tweag-credential-helper`
+
+Upstream:
+- [tweag/credential-helper](https://github.com/tweag/credential-helper)
+
+What it is:
+- A credential-helper framework and agent for Bazel and related tooling.
+- It supports multiple providers, including “Remote Execution & Remote Caching
+  Services”, and can be configured for host patterns such as a private
+  `bazel-remote` instance.
+
+What it is good for:
+- Standardizing auth for remote cache/execution endpoints.
+- Separating credential logic from `.bazelrc` and workspace dependency config.
+- Covering both REAPI endpoints and artifact download hosts with one helper
+  stack.
+
+How rek8s maps to it:
+- Worth knowing when a rek8s deployment is not anonymous and clients need a
+  real credential-helper story.
+- Especially relevant for organizations that also secure artifact downloads,
+  not just the REAPI endpoint itself.
+
 ## `bb-clientd`
 
 Upstream:
@@ -233,6 +350,103 @@ How rek8s maps to it:
 - rek8s already exposes the Buildbarn browser when `rbe.buildbarn.browser` is
   enabled.
 - This is the main browser-style inspection surface in the current chart.
+
+## `bb-portal`
+
+Upstream:
+- [buildbarn/bb-portal](https://github.com/buildbarn/bb-portal)
+
+What it is:
+- A web service for browsing Bazel build results.
+- Upstream says it consumes Build Event Protocol data either from local files
+  or streamed through the Build Event Service protocol, and persists analyzed
+  invocation results for later browsing and search.
+
+What it is good for:
+- Browsable BEP/BES results outside of the BuildBuddy UI model.
+- Grouping Bazel invocations into higher-level builds.
+- Persisted lookup of prior invocation failures and summaries.
+
+How rek8s maps to it:
+- Not charted today, but important as a BES-adjacent alternative in the wider
+  ecosystem.
+- Relevant if rek8s ever grows beyond “BuildBuddy OSS as the BES provider”.
+
+## `recc`
+
+Upstream:
+- [BuildGrid `recc`](https://buildgrid.gitlab.io/recc/)
+
+What it is:
+- The Remote Execution Caching Compiler.
+- Upstream describes it as a compiler command launcher that uses REAPI for
+  caching and remote execution of compilation and link actions.
+
+What it is good for:
+- Incremental adoption of REAPI for C and C++ toolchains.
+- Wrapping compiler commands directly, with a simpler mental model than a full
+  build-system integration in some environments.
+- Environments where `reclient` is not the preferred fit.
+
+How to use it against rek8s:
+- Configure `RECC_SERVER` to point at the remote execution server.
+- Set `RECC_CAS_SERVER` if the CAS endpoint differs.
+- Set `RECC_INSTANCE` if the backend expects a non-empty instance name.
+
+Conceptually:
+
+```bash
+export RECC_SERVER=127.0.0.1:8980
+export RECC_INSTANCE=default
+recc /usr/bin/gcc -c hello.c -o hello.o
+```
+
+How rek8s maps to it:
+- Another real REAPI client worth documenting beside Bazel, Buck2, Reninja,
+  and `reclient`.
+- Especially relevant when users want compiler-wrapper adoption instead of a
+  build-graph-native integration.
+
+## `bgd` internal client
+
+Upstream:
+- [BuildGrid internal client docs](https://buildgrid.gitlab.io/buildgrid/user/using_internal.html)
+
+What it is:
+- A minimal remote execution client exposed through the `bgd` CLI.
+- Upstream describes it as an internal client that can be used to exercise a
+  BuildGrid deployment without bringing in a separate build system.
+
+What it is good for:
+- Functional testing of a BuildGrid endpoint.
+- Local demos and bring-up flows.
+- Understanding the BuildGrid execution model with fewer moving parts.
+
+How rek8s maps to it:
+- Not directly relevant to the currently charted providers, but worth knowing
+  if rek8s ever adds BuildGrid.
+- Another example of the ecosystem having small “probe” clients that operators
+  often miss.
+
+## `buildbox-casd`
+
+Upstream:
+- [BuildBox docs](https://buildgrid.gitlab.io/buildbox/buildbox/)
+
+What it is:
+- A local CAS daemon and proxy used in the BuildBox ecosystem.
+- Upstream describes it as a local cache in front of remote CAS, improving
+  worker performance by avoiding repeated remote blob fetches.
+
+What it is good for:
+- Worker-side CAS acceleration.
+- Shared local blob caching on machines that run remote-worker processes.
+- Exploring a richer “local CAS in front of remote CAS” deployment model.
+
+How rek8s maps to it:
+- Not a direct rek8s chart component today, but important for understanding the
+  BuildGrid/BuildBox worker model.
+- Useful context if rek8s ever adds BuildGrid or worker-side cache patterns.
 
 ## `rexplorer`
 
