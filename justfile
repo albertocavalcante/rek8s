@@ -9,6 +9,7 @@ magalu-guide:
     @echo "Run:"
     @echo "  cd ../rek8s-magalu"
     @echo "  just init-local"
+    @echo "  just magalu-login"
     @echo "  just configure-local"
     @echo "  just bootstrap-magalu-runtime-key"
     @echo "  just status"
