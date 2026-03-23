@@ -219,6 +219,30 @@ hardcoding.
 **Decision**: Only one RBE provider can be active per rek8s deployment.
 Attempting to enable both Buildfarm and Buildbarn is a validation error.
 
+---
+
+## DD-013: Terraform Support Stays Foundation-First
+
+**Decision**: The first Terraform support layer should create
+cluster foundations and provider-shaped prerequisites, not try to own the
+entire `rek8s` application deployment lifecycle on every cloud.
+
+**Rationale**:
+- The existing cluster profiles are already the stable deployment contract for
+  the Helm chart.
+- Provider maturity is uneven. EKS has a strong module and add-on story, while
+  DigitalOcean explicitly warns against creating the cluster and Kubernetes
+  provider resources in the same module.
+- A foundation-first Terraform layer is easier to validate honestly and less
+  likely to encode provider-ordering failures as "supported" examples.
+
+**Implementation**:
+- Terraform roots live under `examples/terraform/`.
+- Each root maps to an existing cluster profile rather than inventing a second
+  configuration model.
+- `rek8s` Helm installation remains a separate, explicit step unless a
+  provider's add-on workflow is mature enough to justify more automation.
+
 **Rationale**:
 - Both listen on port 8980 for the REAPI.
 - Running both would confuse the ingress routing.

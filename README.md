@@ -192,6 +192,9 @@ For platform-specific deployment guidance and cloud gotchas, see
 [`docs/major-platform-deployments.md`](docs/major-platform-deployments.md).
 For self-managed distribution examples, see
 [`docs/distribution-profiles.md`](docs/distribution-profiles.md).
+For Terraform-based cluster foundations aligned to these profiles, see
+[`docs/terraform-blueprints.md`](docs/terraform-blueprints.md) and
+[`examples/terraform/`](examples/terraform/).
 For the next expansion wave and platform prioritization, see
 [`docs/next-platform-roadmap.md`](docs/next-platform-roadmap.md).
 For platforms that need a different support model, see
@@ -413,6 +416,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Design Decisions](docs/design-decisions.md) | 12 architectural decision records with rationale |
 | [Cluster Requirements](docs/cluster-requirements.md) | CRD prerequisites, cluster profiles, resource sizing |
 | [Distribution Profiles](docs/distribution-profiles.md) | K3s and RKE2 deployment patterns via Traefik Gateway API |
+| [Terraform Blueprints](docs/terraform-blueprints.md) | Cluster foundation examples for GKE, EKS, and DOKS mapped to rek8s profiles |
 | [Cluster API And Virtualization](docs/cluster-api-virtualization.md) | How to map Cluster API, vSphere, and Proxmox to real rek8s profiles |
 | [Bare-Metal Load Balancers](docs/bare-metal-load-balancers.md) | MetalLB and host-network options for self-managed Gateway paths |
 | [kube-vip](docs/kube-vip.md) | Control-plane VIP guidance and selective on-prem service exposure |

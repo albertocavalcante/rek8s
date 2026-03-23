@@ -60,6 +60,9 @@ first "real" ingress-backed baseline, start with
   `HTTPRoute` and `GRPCRoute`, not the `Gateway` itself.
 - BuildBuddy should not be scaled horizontally on SQLite. Move it to managed
   MySQL first.
+- If you want Terraform-managed cluster foundations for GKE, EKS, or DOKS, see
+  [`docs/terraform-blueprints.md`](./terraform-blueprints.md) and
+  [`examples/terraform/`](../examples/terraform/).
 
 ## Vanilla Kubernetes
 
@@ -116,6 +119,7 @@ Example files:
 
 - [`examples/cluster-profiles/gke.yaml`](../examples/cluster-profiles/gke.yaml)
 - [`examples/gateways/gke-external-gateway.yaml`](../examples/gateways/gke-external-gateway.yaml)
+- [`examples/terraform/gke-gateway`](../examples/terraform/gke-gateway/)
 
 Install:
 
@@ -143,6 +147,7 @@ Example files:
 
 - [`examples/cluster-profiles/digitalocean.yaml`](../examples/cluster-profiles/digitalocean.yaml)
 - [`examples/gateways/doks-cilium-gateway.yaml`](../examples/gateways/doks-cilium-gateway.yaml)
+- [`examples/terraform/doks-gateway`](../examples/terraform/doks-gateway/)
 
 Install:
 
@@ -171,6 +176,7 @@ Gotchas:
 Example file:
 
 - [`examples/cluster-profiles/eks.yaml`](../examples/cluster-profiles/eks.yaml)
+- [`examples/terraform/eks-nginx`](../examples/terraform/eks-nginx/)
 
 Install:
 

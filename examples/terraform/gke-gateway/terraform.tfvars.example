@@ -1,0 +1,5 @@
+project_id         = "my-gcp-project"
+region             = "us-central1"
+zones              = ["us-central1-a", "us-central1-b", "us-central1-c"]
+cluster_name       = "rek8s-gke"
+kubernetes_version = "latest"

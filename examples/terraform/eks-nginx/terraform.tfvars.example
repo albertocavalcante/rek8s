@@ -1,0 +1,4 @@
+region             = "us-east-1"
+cluster_name       = "rek8s-eks"
+kubernetes_version = "1.33"
+availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
