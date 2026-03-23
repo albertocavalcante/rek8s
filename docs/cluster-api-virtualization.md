@@ -103,6 +103,9 @@ Practical implications for `rek8s`:
 - this is another reason Proxmox should reuse generic runtime profiles instead
   of pretending to be a cloud-style provider profile
 
+See [`bare-metal-load-balancers.md`](./bare-metal-load-balancers.md) for the
+first MetalLB-based answer documented in this repo.
+
 ## Talos On Proxmox Or VMware
 
 Talos is a special case because Talos does change the guest-cluster operating

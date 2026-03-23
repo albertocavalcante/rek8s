@@ -414,6 +414,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Cluster Requirements](docs/cluster-requirements.md) | CRD prerequisites, cluster profiles, resource sizing |
 | [Distribution Profiles](docs/distribution-profiles.md) | K3s and RKE2 deployment patterns via Traefik Gateway API |
 | [Cluster API And Virtualization](docs/cluster-api-virtualization.md) | How to map Cluster API, vSphere, and Proxmox to real rek8s profiles |
+| [Bare-Metal Load Balancers](docs/bare-metal-load-balancers.md) | MetalLB and host-network options for self-managed Gateway paths |
 | [OpenShift Compatibility](docs/openshift-compatibility.md) | Current Route/SCC support status and next steps for ROSA/ARO |
 | [Component Matrix](docs/component-matrix.md) | Buildfarm vs Buildbarn comparison, BES feature matrix |
 | [Client Tooling](docs/client-tooling.md) | Operator/debug tooling such as bf-client, reclient, bb-clientd, and CAS utilities |

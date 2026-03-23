@@ -1,0 +1,18 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: rek8s-public
+  namespace: metallb-system
+spec:
+  # Replace this with real addresses from your LAN or routed subnet.
+  addresses:
+    - 198.51.100.240-198.51.100.250
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: rek8s-public
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - rek8s-public

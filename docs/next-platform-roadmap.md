@@ -217,6 +217,28 @@ Remaining validation work for this family:
 These should narrow into concrete validation notes instead of broad platform
 buckets.
 
+## Support Gaps
+
+### Bare-metal load balancers
+
+Status: guide added in [`bare-metal-load-balancers.md`](./bare-metal-load-balancers.md)
+
+Why this mattered:
+
+- several self-managed profiles depend on `LoadBalancer` exposure indirectly
+- the missing load-balancer layer was a bigger real blocker than another
+  provider name
+
+Current first answer:
+
+- MetalLB layer 2
+
+Still open:
+
+- BGP / FRR guidance
+- kube-vip as a service load balancer
+- Cilium LB-IPAM guidance
+
 ## Sources
 
 - Vultr Kubernetes overview: <https://docs.vultr.com/products/kubernetes>

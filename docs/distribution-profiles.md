@@ -31,6 +31,8 @@ Important details:
 - If the Gateway has no external address, Cilium documents that you may be
   missing a LoadBalancer implementation. On bare metal, plan for MetalLB,
   LB-IPAM, or Cilium host-network mode.
+- See [`bare-metal-load-balancers.md`](./bare-metal-load-balancers.md) for the
+  first supported MetalLB path in this repo.
 
 ## Shared Traefik Gateway Path
 
