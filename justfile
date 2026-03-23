@@ -7,6 +7,12 @@ setup:
     @command -v lefthook >/dev/null 2>&1 || { echo "lefthook not installed; install with: brew install lefthook"; exit 1; }
     lefthook install
 
+install-dev-tools:
+    ./scripts/install-dev-tools.sh
+
+check-dev-tools:
+    ./scripts/install-dev-tools.sh --check
+
 install-hooks:
     @command -v lefthook >/dev/null 2>&1 || { echo "lefthook not installed; install with: brew install lefthook"; exit 1; }
     lefthook install
@@ -15,8 +21,7 @@ pre-commit:
     lefthook run pre-commit
 
 dev-tools:
-    @echo "Recommended local tools:"
-    @echo "  brew install just lefthook tflint actionlint yamllint shellcheck"
+    ./scripts/install-dev-tools.sh --print
 
 tf-fmt:
     terraform fmt -recursive examples/terraform

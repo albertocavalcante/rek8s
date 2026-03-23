@@ -1,0 +1,9 @@
+tap "homebrew/core"
+
+brew "actionlint"
+brew "just"
+brew "lefthook"
+brew "shellcheck"
+brew "terraform"
+brew "tflint"
+brew "yamllint"
