@@ -186,14 +186,36 @@ Main gotchas:
 - Storage remains external to Talos itself, so the profile intentionally
   expects a default StorageClass supplied by the operator.
 
-Remaining distribution candidates:
+### Cluster API, vSphere, and Proxmox
 
-- Cluster API-based installs
-- vSphere-backed clusters
-- Proxmox-backed clusters
+Status: guide added in [`cluster-api-virtualization.md`](./cluster-api-virtualization.md)
 
-These should eventually expand beyond the first Traefik-based distribution
-profiles into a broader “distribution profiles” section.
+Why this graduated into guidance instead of a direct profile:
+
+- Cluster API is a lifecycle layer for workload clusters, not an ingress or CNI
+  layer.
+- The Cluster API provider list includes both `Proxmox` and `vSphere`, but the
+  right `rek8s` profile still depends on the workload cluster runtime.
+- The repo now ships a generic [`cilium-gateway-api.yaml`](../examples/cluster-profiles/cilium-gateway-api.yaml)
+  profile to cover the common self-managed Cilium path.
+
+Main gotchas:
+
+- Proxmox does not provide LBaaS in the CAPPX model, so operators must bring a
+  load-balancer strategy explicitly.
+- CAPV published images are useful for bring-up, but CAPV recommends custom
+  images for production-like environments.
+- These environments should reuse existing runtime profiles before adding a new
+  platform-specific values file.
+
+Remaining validation work for this family:
+
+- validate `cilium-gateway-api.yaml` on a real Cluster API workload cluster
+- validate one vSphere-backed runtime against the generic profile mapping
+- validate one Proxmox-backed runtime with an explicit load-balancer strategy
+
+These should narrow into concrete validation notes instead of broad platform
+buckets.
 
 ## Sources
 
@@ -224,3 +246,8 @@ profiles into a broader “distribution profiles” section.
 - Talos KubePrism: <https://www.talos.dev/v1.8/kubernetes-guides/configuration/kubeprism/>
 - Talos ingress firewall: <https://www.talos.dev/v1.11/talos-guides/network/ingress-firewall/>
 - Cilium Gateway API support: <https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/>
+- Cluster API provider list: <https://main.cluster-api.sigs.k8s.io/reference/providers>
+- Cluster API version support: <https://main.cluster-api.sigs.k8s.io/reference/versions>
+- Cluster API kubeadm bootstrap: <https://main.cluster-api.sigs.k8s.io/tasks/bootstrap/kubeadm-bootstrap/>
+- Cluster API Provider vSphere: <https://github.com/kubernetes-sigs/cluster-api-provider-vsphere>
+- Cluster API Provider Proxmox: <https://github.com/k8s-proxmox/cluster-api-provider-proxmox>

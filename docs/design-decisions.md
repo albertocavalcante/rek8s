@@ -84,6 +84,7 @@ Kubernetes cluster configurations.
   provide tested profiles:
   - `calico-contour.yaml` -- Calico CNI + Contour ingress (on-prem typical)
   - `calico-gateway-api.yaml` -- Calico CNI + Gateway API (modern on-prem)
+  - `cilium-gateway-api.yaml` -- generic Cilium + Gateway API
   - `digitalocean.yaml` -- DOKS / Cilium + Gateway API
   - `gke.yaml` -- GKE with standard networking
   - `eks.yaml` -- EKS with ingress-nginx + EBS

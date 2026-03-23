@@ -158,6 +158,7 @@ Use them as-is or as a starting point for your own configuration.
 |---------|-----|---------|---------------|-----|----------|
 | [`calico-contour`](examples/cluster-profiles/calico-contour.yaml) | Calico | Contour HTTPProxy | Calico v3 | cert-manager | On-prem production |
 | [`calico-gateway-api`](examples/cluster-profiles/calico-gateway-api.yaml) | Calico | Gateway API | Calico v3 | cert-manager | Modern on-prem |
+| [`cilium-gateway-api`](examples/cluster-profiles/cilium-gateway-api.yaml) | Cilium | Gateway API / Cilium | Standard k8s | cert-manager | Generic Cilium clusters |
 | [`vanilla-nginx`](examples/cluster-profiles/vanilla-nginx.yaml) | Any CNI with netpol support | ingress-nginx | Standard k8s | cert-manager | Generic upstream Kubernetes |
 | [`docker-desktop`](examples/cluster-profiles/docker-desktop.yaml) | Docker Desktop | None (port-forward) | Disabled | Disabled | Local experimentation |
 | [`gke`](examples/cluster-profiles/gke.yaml) | GKE Dataplane V2 | Gateway API | Standard k8s | cert-manager | Google Cloud |
@@ -412,6 +413,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Design Decisions](docs/design-decisions.md) | 12 architectural decision records with rationale |
 | [Cluster Requirements](docs/cluster-requirements.md) | CRD prerequisites, cluster profiles, resource sizing |
 | [Distribution Profiles](docs/distribution-profiles.md) | K3s and RKE2 deployment patterns via Traefik Gateway API |
+| [Cluster API And Virtualization](docs/cluster-api-virtualization.md) | How to map Cluster API, vSphere, and Proxmox to real rek8s profiles |
 | [OpenShift Compatibility](docs/openshift-compatibility.md) | Current Route/SCC support status and next steps for ROSA/ARO |
 | [Component Matrix](docs/component-matrix.md) | Buildfarm vs Buildbarn comparison, BES feature matrix |
 | [Client Tooling](docs/client-tooling.md) | Operator/debug tooling such as bf-client, reclient, bb-clientd, and CAS utilities |

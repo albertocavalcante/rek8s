@@ -146,16 +146,21 @@ Monitoring:       Prometheus Operator
 CNI:              Cilium
 Ingress:          Gateway API (Cilium-native)
 TLS:              cert-manager
-Network Policies: CiliumNetworkPolicy (cilium.io/v2)
+Network Policies: Standard Kubernetes NetworkPolicy
 Storage:          Local PV or cloud volumes
 Monitoring:       Prometheus Operator + Hubble
 ```
 
 **Required CRDs**:
-- `cilium.io/v2`: CiliumNetworkPolicy
 - `gateway.networking.k8s.io/v1`: GatewayClass, Gateway, HTTPRoute, GRPCRoute
 - `cert-manager.io/v1`: Certificate, ClusterIssuer
 - `monitoring.coreos.com/v1`: ServiceMonitor
+
+Notes:
+- `rek8s` currently uses standard Kubernetes `NetworkPolicy` for this path,
+  not `CiliumNetworkPolicy`.
+- Cilium-specific observability such as Hubble remains an operator choice
+  outside the current chart.
 
 ### `gke` (Google Kubernetes Engine)
 

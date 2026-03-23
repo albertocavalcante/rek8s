@@ -100,6 +100,7 @@ Directly supported now:
 - `k3s-traefik-gateway.yaml`
 - `rke2-traefik-gateway.yaml`
 - `talos-cilium-gateway.yaml`
+- `cilium-gateway-api.yaml`
 
 Why separate:
 
@@ -115,8 +116,39 @@ Recommended support model:
   advanced networking path
 - keep the values files simple and focused on ingress/CNI/storage assumptions
 
+## Cluster API And Virtualization Track
+
+Platforms:
+
+- Cluster API workload clusters
+- vSphere-backed clusters
+- Proxmox-backed clusters
+
+Guide:
+
+- [`cluster-api-virtualization.md`](./cluster-api-virtualization.md)
+
+Why this is a separate support track:
+
+- Cluster API manages lifecycle, but does not choose ingress, network policy,
+  or storage for `rek8s`.
+- Hypervisors like vSphere and Proxmox affect provisioning and load-balancer
+  availability, but do not by themselves define the correct chart profile.
+
+Recommended support model:
+
+- reuse runtime profiles such as `cilium-gateway-api`, `calico-gateway-api`,
+  `talos-cilium-gateway`, and `vanilla-nginx`
+- add a new direct profile only when the platform changes chart behavior in a
+  way the generic runtime profiles cannot express
+
 ## Sources
 
+- Cluster API provider list: <https://main.cluster-api.sigs.k8s.io/reference/providers>
+- Cluster API version support: <https://main.cluster-api.sigs.k8s.io/reference/versions>
+- Cluster API kubeadm bootstrap: <https://main.cluster-api.sigs.k8s.io/tasks/bootstrap/kubeadm-bootstrap/>
+- Cluster API Provider vSphere: <https://github.com/kubernetes-sigs/cluster-api-provider-vsphere>
+- Cluster API Provider Proxmox: <https://github.com/k8s-proxmox/cluster-api-provider-proxmox>
 - Talos deploying Cilium: <https://www.talos.dev/latest/kubernetes-guides/network/deploying-cilium/>
 - Talos KubePrism: <https://www.talos.dev/v1.8/kubernetes-guides/configuration/kubeprism/>
 - Talos ingress firewall: <https://www.talos.dev/v1.11/talos-guides/network/ingress-firewall/>
