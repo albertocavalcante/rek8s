@@ -1,0 +1,88 @@
+name: Terraform
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "examples/terraform/**"
+      - ".github/workflows/terraform.yml"
+      - "scripts/lint-terraform.sh"
+      - "scripts/terraform-roots.sh"
+      - "scripts/validate-terraform.sh"
+      - "tools/lint/tflint.hcl"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "examples/terraform/**"
+      - ".github/workflows/terraform.yml"
+      - "scripts/lint-terraform.sh"
+      - "scripts/terraform-roots.sh"
+      - "scripts/validate-terraform.sh"
+      - "tools/lint/tflint.hcl"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  TF_VERSION: "1.14.7"
+
+jobs:
+  fmt:
+    name: Format
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive -diff examples/terraform
+
+  validate:
+    name: Validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Validate
+        run: ./scripts/validate-terraform.sh
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@90f302c255ef959cbfb4bd10581afecdb7ece3e6 # v4.1.1
+        with:
+          tflint_version: v0.55.1
+
+      - name: Run TFLint
+        run: ./scripts/lint-terraform.sh

@@ -1,0 +1,58 @@
+output:
+  - meta
+  - summary
+  - success
+
+pre-commit:
+  parallel: true
+  commands:
+    trailing-whitespace:
+      glob: "**/*.{md,tf,yml,yaml}"
+      run: |
+        for file in {staged_files}; do
+          [ -f "$file" ] || continue
+          if grep -n '[[:space:]]$' "$file" >/dev/null 2>&1; then
+            echo "Trailing whitespace found in $file"
+            exit 1
+          fi
+        done
+
+    terraform-fmt:
+      glob: "examples/terraform/**/*.tf"
+      run: terraform fmt -check -diff {staged_files}
+      fail_text: "Run `terraform fmt -recursive examples/terraform`"
+
+    terraform-validate:
+      glob: "examples/terraform/**/*.tf"
+      run: ./scripts/validate-terraform.sh
+      fail_text: "Terraform validation failed"
+
+    terraform-lint:
+      glob: "examples/terraform/**/*.tf"
+      run: |
+        if command -v tflint >/dev/null 2>&1; then
+          ./scripts/lint-terraform.sh
+        else
+          echo "Skipping tflint (install with: brew install tflint)"
+        fi
+      fail_text: "Terraform lint failed"
+
+    yaml-lint:
+      glob: "**/*.{yml,yaml}"
+      run: |
+        if command -v yamllint >/dev/null 2>&1; then
+          yamllint -c tools/lint/yamllint.yml {staged_files}
+        else
+          echo "Skipping yamllint (install with: brew install yamllint)"
+        fi
+      fail_text: "YAML lint failed"
+
+    actions-lint:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: |
+        if command -v actionlint >/dev/null 2>&1; then
+          actionlint -config-file tools/lint/actionlint.yml {staged_files}
+        else
+          echo "Skipping actionlint (install with: brew install actionlint shellcheck)"
+        fi
+      fail_text: "Workflow lint failed"

@@ -425,6 +425,24 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Client Tooling](docs/client-tooling.md) | Operator/debug tooling such as bf-client, reclient, bb-clientd, and CAS utilities |
 | [REAPI Ecosystem](docs/reapi-ecosystem.md) | Known REAPI servers and clients beyond the providers charted today |
 
+## Development
+
+For local lint and hook setup:
+
+```bash
+brew install just lefthook tflint actionlint yamllint shellcheck
+just setup
+just lint
+```
+
+The repo now follows the same pattern used in your other projects:
+
+- `lefthook.yml` for pre-commit checks
+- `justfile` for local lint and validation commands
+- `.github/workflows/lint.yml` for YAML and GitHub Actions lint
+- `.github/workflows/terraform.yml` for Terraform `fmt`, `validate`, and `tflint`
+- `tools/lint/` for shared lint configuration
+
 ## Related Projects
 
 - [bazel-buildfarm](https://github.com/bazelbuild/bazel-buildfarm) --
