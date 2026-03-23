@@ -8,10 +8,10 @@ setup:
     lefthook install
 
 install-dev-tools:
-    ./scripts/install-dev-tools.sh
+    ./tools/scripts/dev-tools.sh
 
 check-dev-tools:
-    ./scripts/install-dev-tools.sh --check
+    ./tools/scripts/dev-tools.sh --check
 
 install-hooks:
     @command -v lefthook >/dev/null 2>&1 || { echo "lefthook not installed; install with: brew install lefthook"; exit 1; }
@@ -21,7 +21,7 @@ pre-commit:
     lefthook run pre-commit
 
 dev-tools:
-    ./scripts/install-dev-tools.sh --print
+    ./tools/scripts/dev-tools.sh --print
 
 tf-fmt:
     terraform fmt -recursive examples/terraform
@@ -30,11 +30,11 @@ tf-fmt-check:
     terraform fmt -check -recursive -diff examples/terraform
 
 tf-validate:
-    ./scripts/validate-terraform.sh
+    ./tools/scripts/validate-terraform.sh
 
 tf-lint:
     @command -v tflint >/dev/null 2>&1 || { echo "tflint not installed; install with: brew install tflint"; exit 1; }
-    ./scripts/lint-terraform.sh
+    ./tools/scripts/lint-terraform.sh
 
 lint-yaml:
     @command -v yamllint >/dev/null 2>&1 || { echo "yamllint not installed; install with: brew install yamllint"; exit 1; }
@@ -46,9 +46,9 @@ lint-actions:
 
 lint:
     terraform fmt -check -recursive -diff examples/terraform
-    ./scripts/validate-terraform.sh
+    ./tools/scripts/validate-terraform.sh
     @if command -v tflint >/dev/null 2>&1; then \
-      ./scripts/lint-terraform.sh; \
+      ./tools/scripts/lint-terraform.sh; \
     else \
       echo "Skipping tflint (install with: brew install tflint)"; \
     fi
@@ -64,7 +64,7 @@ lint:
     fi
 
 diagrams:
-    ./scripts/render-diagrams.sh
+    ./tools/scripts/render-diagrams.sh
 
 check-diagrams:
-    ./scripts/render-diagrams.sh --check
+    ./tools/scripts/render-diagrams.sh --check

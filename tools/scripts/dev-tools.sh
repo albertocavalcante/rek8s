@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
 brewfile="$repo_root/tools/Brewfile.dev"
 
 usage() {
@@ -9,9 +9,9 @@ usage() {
 Install rek8s local development tools with Homebrew.
 
 Usage:
-  ./scripts/install-dev-tools.sh
-  ./scripts/install-dev-tools.sh --check
-  ./scripts/install-dev-tools.sh --print
+  ./tools/scripts/dev-tools.sh
+  ./tools/scripts/dev-tools.sh --check
+  ./tools/scripts/dev-tools.sh --print
 
 Options:
   --check   Exit non-zero if any required tool is missing.

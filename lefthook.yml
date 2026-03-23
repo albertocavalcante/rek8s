@@ -24,14 +24,14 @@ pre-commit:
 
     terraform-validate:
       glob: "examples/terraform/**/*.tf"
-      run: ./scripts/validate-terraform.sh
+      run: ./tools/scripts/validate-terraform.sh
       fail_text: "Terraform validation failed"
 
     terraform-lint:
       glob: "examples/terraform/**/*.tf"
       run: |
         if command -v tflint >/dev/null 2>&1; then
-          ./scripts/lint-terraform.sh
+          ./tools/scripts/lint-terraform.sh
         else
           echo "Skipping tflint (install with: brew install tflint)"
         fi

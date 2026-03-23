@@ -430,7 +430,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 For local lint and hook setup:
 
 ```bash
-./scripts/install-dev-tools.sh
+./tools/scripts/dev-tools.sh
 just setup
 just lint
 ```
@@ -438,7 +438,7 @@ just lint
 If you only want to check what is missing first:
 
 ```bash
-./scripts/install-dev-tools.sh --check
+./tools/scripts/dev-tools.sh --check
 ```
 
 The repo now follows the same pattern used in your other projects:
@@ -448,7 +448,7 @@ The repo now follows the same pattern used in your other projects:
 - `.github/workflows/lint.yml` for YAML and GitHub Actions lint
 - `.github/workflows/terraform.yml` for Terraform `fmt`, `validate`, and `tflint`
 - `tools/lint/` for shared lint configuration
-- `tools/Brewfile.dev` plus `scripts/install-dev-tools.sh` for macOS/Homebrew tool bootstrap
+- `tools/Brewfile.dev` plus `tools/scripts/dev-tools.sh` for macOS/Homebrew tool bootstrap
 
 ## Related Projects
 

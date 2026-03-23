@@ -7,9 +7,9 @@ on:
     paths:
       - "examples/terraform/**"
       - ".github/workflows/terraform.yml"
-      - "scripts/lint-terraform.sh"
-      - "scripts/terraform-roots.sh"
-      - "scripts/validate-terraform.sh"
+      - "tools/scripts/lint-terraform.sh"
+      - "tools/scripts/terraform-roots.sh"
+      - "tools/scripts/validate-terraform.sh"
       - "tools/lint/tflint.hcl"
   pull_request:
     branches:
@@ -17,9 +17,9 @@ on:
     paths:
       - "examples/terraform/**"
       - ".github/workflows/terraform.yml"
-      - "scripts/lint-terraform.sh"
-      - "scripts/terraform-roots.sh"
-      - "scripts/validate-terraform.sh"
+      - "tools/scripts/lint-terraform.sh"
+      - "tools/scripts/terraform-roots.sh"
+      - "tools/scripts/validate-terraform.sh"
       - "tools/lint/tflint.hcl"
   workflow_dispatch:
 
@@ -64,7 +64,7 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Validate
-        run: ./scripts/validate-terraform.sh
+        run: ./tools/scripts/validate-terraform.sh
 
   tflint:
     name: TFLint
@@ -85,4 +85,4 @@ jobs:
           tflint_version: v0.55.1
 
       - name: Run TFLint
-        run: ./scripts/lint-terraform.sh
+        run: ./tools/scripts/lint-terraform.sh
