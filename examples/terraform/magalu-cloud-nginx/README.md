@@ -14,6 +14,28 @@ It provisions:
 It intentionally stops at cluster foundation. `ingress-nginx`,
 `cert-manager`, and `rek8s` remain a second phase.
 
+## Verification Status
+
+This example was re-checked against Magalu primary sources on March 22, 2026.
+
+Validated locally in this repo:
+
+- `terraform validate` for this Terraform root
+- full `./tools/scripts/validate-terraform.sh` across all Terraform examples
+- `helm lint ./charts/rek8s`
+- `helm template` with [`../../cluster-profiles/magalu-cloud.yaml`](../../cluster-profiles/magalu-cloud.yaml)
+- YAML parsing of [`../../ingress-nginx/magalu-cloud-public.yaml`](../../ingress-nginx/magalu-cloud-public.yaml)
+
+Not validated here:
+
+- a live `terraform apply` against a real Magalu account
+- a live `helm install` on an actual Magalu cluster
+
+That means the foundation shape, provider resources, current version defaults,
+and install flow are source-backed and locally validated, but final
+environment-specific behavior still depends on your Magalu credentials,
+selected region, and currently available flavors.
+
 ## Usage
 
 ```bash
@@ -57,3 +79,38 @@ helm install rek8s ../../../charts/rek8s \
 - The provider documents `enabled_server_group` as a write-only field that
   needs Terraform `1.11+`, so this root leaves it unset to stay compatible
   with the repo's current Terraform `1.5.x` baseline.
+
+## Current Defaults In This Example
+
+- `region = "br-se1"`
+- `kubernetes_version = "v1.33.6"`
+- `nodepool_flavor_name = "cloud-k8s.gp1.small"`
+- `availability_zones = ["a", "b", "c"]`
+- `storageClass = "mgc-csi-magalu-sc"` in the matching `rek8s` profile
+
+Reasoning:
+
+- `v1.33.6` is still in Magalu's currently available Kubernetes version list
+  as of March 22, 2026.
+- `cloud-k8s.gp1.small` appears in Magalu's official Terraform example repo.
+- The Terraform root also checks the requested Kubernetes version and nodepool
+  flavor against the provider's live data sources before apply.
+
+## References
+
+- Magalu Kubernetes quick start:
+  <https://docs.magalu.cloud/docs/containers-manager/kubernetes/getting-started/>
+- Magalu platform versions:
+  <https://docs.magalu.cloud/docs/containers-manager/kubernetes/additional-explanations/versions/>
+- Magalu currently available Kubernetes versions:
+  <https://docs.magalu.cloud/docs/containers-manager/kubernetes/additional-explanations/kubernetes-versions/>
+- Magalu service load balancer configuration:
+  <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/load-balancers/service/conf-service-lb/>
+- Magalu storage class details:
+  <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/persistent-volumes/storage-class/>
+- Magalu Terraform provider:
+  <https://registry.terraform.io/providers/magalucloud/mgc/latest>
+- Magalu Terraform provider docs source:
+  <https://github.com/MagaluCloud/terraform-provider-mgc>
+- Magalu Terraform examples:
+  <https://github.com/MagaluCloud/terraform-examples>

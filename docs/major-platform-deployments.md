@@ -289,6 +289,13 @@ Gotchas:
 - Magalu kubeconfig certificates expire after one year; refresh the kubeconfig
   before it expires.
 
+Verification note:
+
+- This repo validates the Magalu path with `terraform validate`, Helm render,
+  and YAML parsing, but not with a live Magalu `terraform apply` in CI. Treat
+  the example as source-backed and locally validated rather than runtime-proven
+  in an automated Magalu account.
+
 ## Vultr Kubernetes Engine
 
 Example file:
