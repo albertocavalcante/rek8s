@@ -598,3 +598,72 @@ What would be especially useful for rek8s users:
   backend family.
 - A repeatable cache/RBE interoperability test suite that the chart can run in
   CI against multiple client/provider combinations.
+
+## Rare And Niche Tooling
+
+These are real tools or utility repos that are easy to miss because they are
+more specialized, more backend-specific, or less frequently discussed than the
+headline clients and servers.
+
+### `bb-deployments`
+
+Upstream:
+- [buildbarn/bb-deployments](https://github.com/buildbarn/bb-deployments)
+
+What it is:
+- A repository of deployment examples and supporting assets for Buildbarn.
+- It is closer to ops scaffolding than to a reusable end-user product.
+
+Why it matters:
+- It shows how the Buildbarn maintainers think about topology, storage wiring,
+  and environment bootstrapping.
+- It is useful reference material when comparing rek8s to upstream Buildbarn
+  deployment patterns.
+
+### `bb-storage`
+
+Upstream:
+- [buildbarn/bb-storage](https://github.com/buildbarn/bb-storage)
+
+What it is:
+- Buildbarn's storage daemon and related storage-side components.
+- Upstream positions it as a storage system for Bazel's remote caching and
+  execution protocol.
+
+Why it matters:
+- It is a reminder that “storage tooling” in this ecosystem is not always just
+  an implementation detail hidden behind the executor.
+- It can matter for cache-only or split-topology designs where storage concerns
+  are separated from scheduling/execution concerns.
+
+### BuildBox worker/runtime tools
+
+Upstream:
+- [BuildBox docs](https://buildgrid.gitlab.io/buildbox/buildbox/)
+
+What they are:
+- The broader BuildBox tool family includes more than the user-facing
+  inspection CLIs. It also includes worker/runtime-side pieces such as
+  `buildbox-worker`, `buildbox-run`, and `buildbox-casd`.
+
+Why they matter:
+- They show that some REAPI ecosystems ship a full worker/runtime toolbox, not
+  just a server and a client.
+- They are relevant if rek8s ever expands toward BuildGrid support or starts
+  documenting worker-side cache acceleration patterns more explicitly.
+
+### `Scoot` and `Kajiya`
+
+Upstream:
+- [bazelbuild/remote-apis](https://github.com/bazelbuild/remote-apis)
+
+What they are:
+- Less commonly discussed server implementations listed in the wider REAPI
+  ecosystem.
+
+Why they matter:
+- They reinforce that the protocol surface is broader than the handful of
+  implementations most people name first.
+- They are not operator/debug tools in the same sense as `remote_client` or
+  `bf-client`, but they are part of the “things people may not know exist”
+  category.
