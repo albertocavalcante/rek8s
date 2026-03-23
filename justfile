@@ -3,6 +3,17 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 default:
     @just --list
 
+magalu-guide:
+    @echo "Magalu deployment lives in the sibling repo: ../rek8s-magalu"
+    @echo
+    @echo "Run:"
+    @echo "  cd ../rek8s-magalu"
+    @echo "  just init-local"
+    @echo "  just configure-local"
+    @echo "  just bootstrap-magalu-runtime-key"
+    @echo "  just status"
+    @echo "  just deploy"
+
 setup:
     @command -v lefthook >/dev/null 2>&1 || { echo "lefthook not installed; install with: brew install lefthook"; exit 1; }
     lefthook install
