@@ -122,7 +122,7 @@ Why separate:
 
 Recommended approach:
 
-- Create an OpenShift support document first.
+- OpenShift support document added in [`openshift-compatibility.md`](./openshift-compatibility.md).
 - Decide whether `rek8s` should support OpenShift Routes directly, or continue
   to standardize on Ingress / Gateway API and document the tradeoff.
 

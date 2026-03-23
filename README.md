@@ -412,6 +412,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Design Decisions](docs/design-decisions.md) | 12 architectural decision records with rationale |
 | [Cluster Requirements](docs/cluster-requirements.md) | CRD prerequisites, cluster profiles, resource sizing |
 | [Distribution Profiles](docs/distribution-profiles.md) | K3s and RKE2 deployment patterns via Traefik Gateway API |
+| [OpenShift Compatibility](docs/openshift-compatibility.md) | Current Route/SCC support status and next steps for ROSA/ARO |
 | [Component Matrix](docs/component-matrix.md) | Buildfarm vs Buildbarn comparison, BES feature matrix |
 | [Client Tooling](docs/client-tooling.md) | Operator/debug tooling such as bf-client, reclient, bb-clientd, and CAS utilities |
 | [REAPI Ecosystem](docs/reapi-ecosystem.md) | Known REAPI servers and clients beyond the providers charted today |

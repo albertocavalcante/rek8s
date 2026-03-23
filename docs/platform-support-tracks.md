@@ -47,7 +47,7 @@ Why this is a separate track:
 
 Recommended support model:
 
-1. Add an OpenShift compatibility guide first.
+1. Compatibility guide added in [`openshift-compatibility.md`](./openshift-compatibility.md).
 2. Decide whether `rek8s` should support Routes directly or standardize on
    Ingress / Gateway API and document the tradeoff.
 3. Validate subcharts against restricted SCC expectations before publishing
