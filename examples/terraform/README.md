@@ -18,6 +18,7 @@ platform factory. The default operating model is:
 | GKE Gateway | [`gke-gateway`](./gke-gateway/) | [`../cluster-profiles/gke.yaml`](../cluster-profiles/gke.yaml) | Dataplane V2 + Gateway API |
 | EKS nginx | [`eks-nginx`](./eks-nginx/) | [`../cluster-profiles/eks.yaml`](../cluster-profiles/eks.yaml) | Uses the EKS module plus AWS-managed core add-ons |
 | DOKS Gateway | [`doks-gateway`](./doks-gateway/) | [`../cluster-profiles/digitalocean.yaml`](../cluster-profiles/digitalocean.yaml) | Cluster foundation only by design |
+| Magalu Cloud nginx | [`magalu-cloud-nginx`](./magalu-cloud-nginx/) | [`../cluster-profiles/magalu-cloud.yaml`](../cluster-profiles/magalu-cloud.yaml) | Official Magalu provider + ingress-nginx second phase |
 
 ## Shared Rules
 

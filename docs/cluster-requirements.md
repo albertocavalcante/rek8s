@@ -230,10 +230,10 @@ Monitoring:       OCI Monitoring or Prometheus Operator
 ### `magalu-cloud` (Magalu Cloud Kubernetes)
 
 ```
-CNI:              Managed Kubernetes default
+CNI:              Calico on Magalu Cloud platform v3
 Ingress:          nginx Ingress Controller
 TLS:              cert-manager
-Network Policies: Standard Kubernetes NetworkPolicy (validate enforcement)
+Network Policies: Standard Kubernetes NetworkPolicy
 Storage:          mgc-csi-magalu-sc
 Monitoring:       Prometheus Operator (optional)
 ```

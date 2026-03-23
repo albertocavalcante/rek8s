@@ -1,0 +1,24 @@
+# ingress-nginx values for Magalu Cloud service load balancers.
+#
+# Install with:
+#   helm install ingress-nginx ingress-nginx/ingress-nginx \
+#     --namespace ingress-nginx --create-namespace \
+#     -f examples/ingress-nginx/magalu-cloud-public.yaml
+#
+# Magalu-specific notes:
+#   - `magalu.cloud/load-balancer-visibility` controls internal vs external LB.
+#   - `magalu.cloud/public-ip-reclaim-policy: retain` keeps the public IP after
+#     deleting the Service.
+#   - If you use `loadBalancerSourceRanges`, include the cluster CIDR.
+
+controller:
+  service:
+    type: LoadBalancer
+    annotations:
+      magalu.cloud/load-balancer-visibility: external
+      magalu.cloud/public-ip-reclaim-policy: retain
+    externalTrafficPolicy: Local
+    # If you enable source-range filtering, keep the cluster CIDR in the list.
+    # loadBalancerSourceRanges:
+    #   - 203.0.113.10/32
+    #   - 192.168.0.0/16

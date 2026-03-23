@@ -166,7 +166,7 @@ Use them as-is or as a starting point for your own configuration.
 | [`eks`](examples/cluster-profiles/eks.yaml) | AWS VPC CNI | ingress-nginx | Standard k8s | cert-manager | Amazon EKS |
 | [`aks`](examples/cluster-profiles/aks.yaml) | Azure CNI / Cilium | Managed nginx | Standard k8s | cert-manager | Azure Kubernetes Service |
 | [`oke`](examples/cluster-profiles/oke.yaml) | OKE CNI | ingress-nginx | Standard k8s | cert-manager | Oracle Kubernetes Engine |
-| [`magalu-cloud`](examples/cluster-profiles/magalu-cloud.yaml) | Magalu Cloud | ingress-nginx | Standard k8s | cert-manager | Magalu Cloud Kubernetes |
+| [`magalu-cloud`](examples/cluster-profiles/magalu-cloud.yaml) | Magalu Cloud / Calico | ingress-nginx | Standard k8s | cert-manager | Magalu Cloud Kubernetes |
 | [`vultr-vke`](examples/cluster-profiles/vultr-vke.yaml) | Vultr / Calico | ingress-nginx | Standard k8s | cert-manager | Vultr Kubernetes Engine |
 | [`linode-lke`](examples/cluster-profiles/linode-lke.yaml) | LKE / Calico | ingress-nginx | Standard k8s | cert-manager | Akamai Cloud / Linode Kubernetes Engine |
 | [`scaleway-kapsule`](examples/cluster-profiles/scaleway-kapsule.yaml) | Kapsule / Cilium or Calico | ingress-nginx | Standard k8s | cert-manager | Scaleway Kubernetes Kapsule |
@@ -416,7 +416,7 @@ scaffolding, infrastructure templates, and design documents are in place.
 | [Design Decisions](docs/design-decisions.md) | 12 architectural decision records with rationale |
 | [Cluster Requirements](docs/cluster-requirements.md) | CRD prerequisites, cluster profiles, resource sizing |
 | [Distribution Profiles](docs/distribution-profiles.md) | K3s and RKE2 deployment patterns via Traefik Gateway API |
-| [Terraform Blueprints](docs/terraform-blueprints.md) | Cluster foundation examples for GKE, EKS, and DOKS mapped to rek8s profiles |
+| [Terraform Blueprints](docs/terraform-blueprints.md) | Cluster foundation examples for GKE, EKS, DOKS, and Magalu Cloud mapped to rek8s profiles |
 | [Cluster API And Virtualization](docs/cluster-api-virtualization.md) | How to map Cluster API, vSphere, and Proxmox to real rek8s profiles |
 | [Bare-Metal Load Balancers](docs/bare-metal-load-balancers.md) | MetalLB and host-network options for self-managed Gateway paths |
 | [kube-vip](docs/kube-vip.md) | Control-plane VIP guidance and selective on-prem service exposure |

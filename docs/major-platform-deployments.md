@@ -40,7 +40,7 @@ first "real" ingress-backed baseline, start with
 | Amazon EKS | [`eks.yaml`](../examples/cluster-profiles/eks.yaml) | nginx ingress | `gp3` | standard k8s | Pair ingress-nginx with AWS LB integration |
 | Azure AKS | [`aks.yaml`](../examples/cluster-profiles/aks.yaml) | managed nginx ingress | `managed-csi-premium` | standard k8s | Uses AKS application routing |
 | Oracle OKE | [`oke.yaml`](../examples/cluster-profiles/oke.yaml) | nginx ingress | `oci-bv` | standard k8s via Calico | OCI LB handled at ingress-controller layer |
-| Magalu Cloud | [`magalu-cloud.yaml`](../examples/cluster-profiles/magalu-cloud.yaml) | nginx ingress | `mgc-csi-magalu-sc` | standard k8s | Storage docs are strong; NP support should be verified |
+| Magalu Cloud | [`magalu-cloud.yaml`](../examples/cluster-profiles/magalu-cloud.yaml) | nginx ingress | `mgc-csi-magalu-sc` | standard k8s | Platform `v3` is the real target: Calico CNI, annotation-driven service load balancers |
 | Vultr VKE | [`vultr-vke.yaml`](../examples/cluster-profiles/vultr-vke.yaml) | nginx ingress | `vultr-block-storage` | standard k8s | Calico default, ingress controller is user-installed |
 | Linode LKE | [`linode-lke.yaml`](../examples/cluster-profiles/linode-lke.yaml) | nginx ingress | `linode-block-storage` | standard k8s | NodeBalancers back `LoadBalancer` services |
 | Scaleway Kapsule | [`scaleway-kapsule.yaml`](../examples/cluster-profiles/scaleway-kapsule.yaml) | nginx ingress | cluster default | standard k8s | Default Block Volume StorageClass, cilium/calico supported |
@@ -251,10 +251,21 @@ Gotchas:
 Example file:
 
 - [`examples/cluster-profiles/magalu-cloud.yaml`](../examples/cluster-profiles/magalu-cloud.yaml)
+- [`examples/terraform/magalu-cloud-nginx`](../examples/terraform/magalu-cloud-nginx/)
+- [`examples/ingress-nginx/magalu-cloud-public.yaml`](../examples/ingress-nginx/magalu-cloud-public.yaml)
 
 Install:
 
 ```bash
+terraform -chdir=examples/terraform/magalu-cloud-nginx apply
+mgc kubernetes cluster kubeconfig --cluster-id "$(terraform -chdir=examples/terraform/magalu-cloud-nginx output -raw cluster_id)" --raw > rek8s-magalu.kubeconfig
+export KUBECONFIG="$PWD/rek8s-magalu.kubeconfig"
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  -f examples/ingress-nginx/magalu-cloud-public.yaml
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager --create-namespace \
+  --set crds.enabled=true
 helm install rek8s ./charts/rek8s \
   -f examples/cluster-profiles/magalu-cloud.yaml \
   --set global.domain=build.example.com
@@ -262,15 +273,21 @@ helm install rek8s ./charts/rek8s \
 
 Gotchas:
 
+- Target Magalu platform `v3`. Magalu documents `v3` as the default for new
+  clusters and lists Calico as the CNI on that platform.
 - On Magalu Cloud platform v3, the default storage class is
   `mgc-csi-magalu-sc`, backed by `block.csi.magalu.cloud`.
 - That default class uses `Retain`, so deleting a PVC does not automatically
   delete the underlying block volume.
 - It also uses `WaitForFirstConsumer`, which is correct for multi-AZ clusters
   but surprises teams expecting immediate volume creation.
-- Magalu's storage documentation is clear; its Kubernetes docs are less explicit
-  about NetworkPolicy enforcement details. Validate policy behavior in-cluster
-  before treating it as a hard security boundary.
+- If you restrict the ingress-controller service with
+  `loadBalancerSourceRanges`, Magalu requires you to include the cluster CIDR
+  in that allowlist or the load balancer becomes unreachable from the cluster.
+- Magalu documents that deleting the cluster does not clean up service load
+  balancers or block-storage volumes that still exist.
+- Magalu kubeconfig certificates expire after one year; refresh the kubeconfig
+  before it expires.
 
 ## Vultr Kubernetes Engine
 
@@ -424,9 +441,15 @@ March 22, 2026.
 - DigitalOcean Gateway API: <https://docs.digitalocean.com/products/kubernetes/how-to/use-gateway-api/>
 - DigitalOcean block storage volumes: <https://docs.digitalocean.com/products/kubernetes/how-to/add-volumes/>
 - DigitalOcean Hubble / Cilium: <https://docs.digitalocean.com/products/kubernetes/how-to/use-cilium-hubble/>
+- Magalu Cloud Kubernetes getting started: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/getting-started/>
+- Magalu Cloud platform versions: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/additional-explanations/versions/>
+- Magalu Cloud Kubernetes versions: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/additional-explanations/kubernetes-versions/>
 - Magalu Cloud load balancers: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/load-balancers/overview/>
+- Magalu Cloud service load balancer configuration: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/load-balancers/service/conf-service-lb/>
 - Magalu Cloud persistent volumes: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/persistent-volumes/overview/>
 - Magalu Cloud storage class details: <https://docs.magalu.cloud/docs/containers-manager/kubernetes/how-to/persistent-volumes/storage-class/>
+- Magalu Cloud Terraform examples: <https://github.com/MagaluCloud/terraform-examples>
+- Magalu Cloud Terraform provider: <https://registry.terraform.io/providers/magalucloud/mgc/latest>
 - Vultr Kubernetes overview: <https://docs.vultr.com/products/kubernetes>
 - Vultr ingress controller FAQ: <https://docs.vultr.com/support/products/vke/does-vke-come-with-an-ingress-controller>
 - Vultr persistent storage FAQ: <https://docs.vultr.com/support/products/vke/how-does-vultr-kubernetes-engine-handle-persistent-data-storage>

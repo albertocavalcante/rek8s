@@ -8,12 +8,14 @@ cleanly to the Helm examples already in this repo.
 
 ## Scope
 
-The first Terraform wave focuses on three concrete targets:
+The first Terraform wave focuses on four concrete targets:
 
 - `GKE Gateway` via the upstream
   `terraform-google-modules/kubernetes-engine/google` module
 - `EKS nginx` via the upstream `terraform-aws-modules/eks/aws` module
 - `DOKS Gateway foundation` via first-party DigitalOcean Terraform resources
+- `Magalu Cloud nginx foundation` via the official `magalucloud/mgc`
+  provider
 
 These roots live under [`examples/terraform/`](../examples/terraform/).
 
@@ -33,6 +35,8 @@ profiles assume:
   `eks.yaml` profile depends on before the Helm phase
 - `doks-gateway` creates a VPC-native DOKS cluster sized for the Gateway API
   path, but intentionally stops before any Kubernetes-provider resources
+- `magalu-cloud-nginx` creates a Magalu Cloud managed cluster and node pool
+  sized for the existing nginx-based `rek8s` profile
 
 ## Deliberate Non-Goals
 
@@ -68,6 +72,7 @@ High-level flow:
 | GKE Gateway | [`examples/terraform/gke-gateway`](../examples/terraform/gke-gateway/) | [`examples/cluster-profiles/gke.yaml`](../examples/cluster-profiles/gke.yaml) | VPC, subnetwork, Dataplane V2 cluster, Gateway API channel, SSD-oriented node pool |
 | EKS nginx | [`examples/terraform/eks-nginx`](../examples/terraform/eks-nginx/) | [`examples/cluster-profiles/eks.yaml`](../examples/cluster-profiles/eks.yaml) | VPC, EKS cluster, managed node group, VPC CNI network policy config, EBS CSI |
 | DOKS Gateway | [`examples/terraform/doks-gateway`](../examples/terraform/doks-gateway/) | [`examples/cluster-profiles/digitalocean.yaml`](../examples/cluster-profiles/digitalocean.yaml) | VPC-native DOKS cluster, HA control plane, autoscaling worker pool |
+| Magalu Cloud nginx | [`examples/terraform/magalu-cloud-nginx`](../examples/terraform/magalu-cloud-nginx/) | [`examples/cluster-profiles/magalu-cloud.yaml`](../examples/cluster-profiles/magalu-cloud.yaml) | Managed Magalu cluster, autoscaling node pool, explicit pod/service CIDRs, ingress-nginx second phase |
 
 ## Provider-Specific Decisions
 
@@ -117,12 +122,39 @@ resources are used.
 That is why the DOKS example is a cluster-foundation root, not a full add-on
 or `helm_release` root.
 
+### Magalu Cloud
+
+The Magalu Cloud root uses the official `magalucloud/mgc` provider directly.
+
+Why that is the right first shape:
+
+- Magalu documents first-class Terraform resources for Kubernetes clusters and
+  node pools.
+- The provider also exposes data sources for current Kubernetes versions and
+  node pool flavors, which the root uses as guardrails.
+- Magalu's service load balancer behavior is annotation-driven on the
+  ingress-controller `Service`, so the provider foundation layer and the
+  ingress-nginx second phase stay cleanly separated.
+
+Important nuance:
+
+- Target Magalu platform `v3`. Magalu documents `v3` as the default for new
+  clusters, with Calico as the cluster CNI.
+- The `magalu-cloud.yaml` `rek8s` profile assumes a user-installed
+  `ingress-nginx` controller exposed through a Magalu `LoadBalancer` service.
+- The provider documents `enabled_server_group` as a write-only argument, and
+  write-only arguments require Terraform `1.11+`. The in-repo example omits it
+  so the root still validates on the repo's current Terraform `1.5.x` toolchain.
+- The example keeps kubeconfig handling as an explicit CLI step instead of
+  writing it into Terraform state.
+
 ## Version Baseline
 
 As of March 22, 2026, these examples are pinned to the following major lines:
 
 - GKE module `~> 44.0`
 - EKS module `~> 21.15`
+- Magalu Cloud provider `~> 0.46.0`
 
 These versions match the current upstream module lines at the time this slice
 was added. Revisit them before expanding the Terraform coverage further.

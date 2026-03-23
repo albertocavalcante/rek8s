@@ -1,13 +1,18 @@
 # rek8s cluster profile: Magalu Cloud Kubernetes
 #
-# For Magalu Cloud managed Kubernetes using:
+# For Magalu Cloud managed Kubernetes platform v3 using:
+#   - Calico as the cluster CNI
 #   - the default v3 block-storage CSI class
-#   - nginx ingress controller
+#   - a user-installed nginx ingress controller exposed through a Magalu
+#     LoadBalancer Service
 #   - standard Kubernetes networking primitives
 #
 # Prerequisites:
-#   - platform v3 recommended (default StorageClass: mgc-csi-magalu-sc)
-#   - nginx ingress controller installed
+#   - platform v3 (default StorageClass: mgc-csi-magalu-sc)
+#   - nginx ingress controller installed, for example with:
+#       helm install ingress-nginx ingress-nginx/ingress-nginx \
+#         --namespace ingress-nginx --create-namespace \
+#         -f examples/ingress-nginx/magalu-cloud-public.yaml
 #   - cert-manager installed if TLS is enabled
 #
 # Usage:
